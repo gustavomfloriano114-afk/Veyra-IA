@@ -1,6 +1,7 @@
 /* =====================================================
    VEYRA IA 0.8
    STYLE COMPLETO
+   PC + TABLET + CELULAR
    ===================================================== */
 
 
@@ -57,6 +58,7 @@ button {
 .app {
     width: 100%;
     height: 100vh;
+    height: 100dvh;
 
     display: flex;
 
@@ -71,6 +73,7 @@ button {
 .sidebar {
     width: 270px;
     height: 100vh;
+    height: 100dvh;
 
     flex-shrink: 0;
 
@@ -82,6 +85,8 @@ button {
     border-right: 1px solid rgba(255, 255, 255, 0.06);
 
     padding: 20px 14px;
+
+    z-index: 100;
 }
 
 
@@ -322,6 +327,7 @@ button {
 
     min-width: 0;
     height: 100vh;
+    height: 100dvh;
 
     display: flex;
     flex-direction: column;
@@ -338,6 +344,8 @@ button {
     position: relative;
 
     height: 72px;
+
+    min-height: 72px;
 
     flex-shrink: 0;
 
@@ -356,6 +364,8 @@ button {
     align-items: center;
 
     gap: 11px;
+
+    min-width: 0;
 }
 
 .veyra-avatar {
@@ -424,6 +434,47 @@ button {
 
 
 /* =====================================================
+   BOTÃO MOBILE
+   ===================================================== */
+
+.mobile-menu-button {
+    display: none;
+
+    width: 38px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: transparent;
+
+    color: #aeb1bb;
+
+    font-size: 21px;
+
+    cursor: pointer;
+
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-menu-button:hover {
+    background: rgba(255, 255, 255, 0.05);
+
+    color: #ffffff;
+}
+
+.mobile-menu-button:active {
+    transform: scale(0.94);
+}
+
+
+/* =====================================================
    PERFIL DO USUÁRIO
    ===================================================== */
 
@@ -431,6 +482,8 @@ button {
     position: relative;
 
     margin-left: auto;
+
+    flex-shrink: 0;
 }
 
 .user-profile-button {
@@ -687,10 +740,13 @@ button {
     min-height: 0;
 
     overflow-y: auto;
+    overflow-x: hidden;
 
     padding: 30px 25px;
 
     scroll-behavior: smooth;
+
+    -webkit-overflow-scrolling: touch;
 }
 
 .chat::-webkit-scrollbar {
@@ -763,7 +819,8 @@ button {
 .suggestions {
     display: grid;
 
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
 
     gap: 9px;
 
@@ -829,7 +886,8 @@ button {
 }
 
 .message-bubble {
-    max-width: min(760px, 82%);
+    max-width:
+        min(760px, 82%);
 
     padding: 13px 16px;
 
@@ -840,6 +898,8 @@ button {
     line-height: 1.65;
 
     overflow-wrap: break-word;
+
+    word-break: break-word;
 }
 
 .message.user .message-bubble {
@@ -904,6 +964,8 @@ button {
 
     padding: 14px;
 
+    max-width: 100%;
+
     overflow-x: auto;
 
     border-radius: 10px;
@@ -911,6 +973,8 @@ button {
     background: #090b10;
 
     border: 1px solid rgba(255, 255, 255, 0.07);
+
+    -webkit-overflow-scrolling: touch;
 }
 
 .message-bubble pre code {
@@ -977,7 +1041,8 @@ button {
 
     background: #858995;
 
-    animation: thinking 1.2s infinite ease-in-out;
+    animation:
+        thinking 1.2s infinite ease-in-out;
 }
 
 .thinking span:nth-child(2) {
@@ -989,16 +1054,21 @@ button {
 }
 
 @keyframes thinking {
+
     0%,
     60%,
     100% {
         opacity: 0.25;
-        transform: translateY(0);
+
+        transform:
+            translateY(0);
     }
 
     30% {
         opacity: 1;
-        transform: translateY(-3px);
+
+        transform:
+            translateY(-3px);
     }
 }
 
@@ -1075,15 +1145,19 @@ button {
 
     border: 1px solid rgba(255, 255, 255, 0.07);
 
-    transition: border-color 0.2s;
+    transition:
+        border-color 0.2s;
 }
 
 .input-box:focus-within {
-    border-color: rgba(124, 92, 255, 0.45);
+    border-color:
+        rgba(124, 92, 255, 0.45);
 }
 
 .input-box textarea {
     flex: 1;
+
+    min-width: 0;
 
     min-height: 37px;
     max-height: 150px;
@@ -1132,7 +1206,8 @@ button {
 .image-button:hover {
     color: #ffffff;
 
-    background: rgba(255, 255, 255, 0.05);
+    background:
+        rgba(255, 255, 255, 0.05);
 }
 
 .send-button {
@@ -1159,11 +1234,13 @@ button {
 .send-button:hover {
     background: #8b70ff;
 
-    transform: translateY(-1px);
+    transform:
+        translateY(-1px);
 }
 
 .send-button:active {
-    transform: translateY(0);
+    transform:
+        translateY(0);
 }
 
 .send-button:disabled {
@@ -1210,6 +1287,8 @@ button {
         #08090d;
 
     padding: 20px;
+
+    overflow-y: auto;
 }
 
 .auth-card {
@@ -1222,7 +1301,8 @@ button {
 
     background: #0d0f14;
 
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
 
     box-shadow:
         0 25px 80px rgba(0, 0, 0, 0.45);
@@ -1302,7 +1382,8 @@ button {
 
     border-radius: 10px;
 
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border:
+        1px solid rgba(255, 255, 255, 0.08);
 
     outline: none;
 
@@ -1322,7 +1403,8 @@ button {
 }
 
 .auth-field input:focus {
-    border-color: rgba(124, 92, 255, 0.55);
+    border-color:
+        rgba(124, 92, 255, 0.55);
 
     box-shadow:
         0 0 0 3px rgba(124, 92, 255, 0.08);
@@ -1379,7 +1461,8 @@ button {
 
     text-align: center;
 
-    margin: 10px 0 0 !important;
+    margin:
+        10px 0 0 !important;
 }
 
 .auth-toggle {
@@ -1410,25 +1493,31 @@ button {
 
 
 /* =====================================================
-   RESPONSIVO
+   TABLET
    ===================================================== */
 
-@media (max-width: 700px) {
+@media (max-width: 900px) {
 
     .sidebar {
-        width: 220px;
+        width: 235px;
     }
 
     .header {
-        padding: 0 17px;
+        padding: 0 18px;
     }
 
     .chat {
-        padding: 22px 17px;
+        padding:
+            24px 18px;
     }
 
     .input-area {
-        padding: 10px 17px 14px;
+        padding:
+            10px 18px 15px;
+    }
+
+    .message-bubble {
+        max-width: 88%;
     }
 
     .welcome {
@@ -1436,15 +1525,165 @@ button {
     }
 
     .welcome h2 {
-        font-size: 23px;
-    }
-
-    .message-bubble {
-        max-width: 90%;
+        font-size: 24px;
     }
 
     .suggestions {
-        grid-template-columns: 1fr;
+        max-width: 600px;
+    }
+
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 700px) {
+
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+
+        overflow: hidden;
+    }
+
+    .app {
+        width: 100%;
+
+        height: 100dvh;
+
+        min-height: 100dvh;
+
+        position: relative;
+    }
+
+
+    /* ---------------------------------------------
+       SIDEBAR MOBILE
+       --------------------------------------------- */
+
+    .sidebar {
+        position: fixed;
+
+        top: 0;
+        left: 0;
+
+        width: min(285px, 82vw);
+
+        height: 100dvh;
+
+        z-index: 5000;
+
+        transform:
+            translateX(-105%);
+
+        transition:
+            transform 0.25s ease,
+            box-shadow 0.25s ease;
+
+        box-shadow:
+            20px 0 50px rgba(0, 0, 0, 0.45);
+
+        padding:
+            max(16px, env(safe-area-inset-top))
+            14px
+            max(16px, env(safe-area-inset-bottom));
+    }
+
+    .sidebar.mobile-open {
+        transform:
+            translateX(0);
+
+        box-shadow:
+            20px 0 60px rgba(0, 0, 0, 0.60);
+    }
+
+
+    /* ---------------------------------------------
+       PRINCIPAL
+       --------------------------------------------- */
+
+    .main {
+        width: 100%;
+
+        height: 100dvh;
+
+        min-width: 0;
+    }
+
+
+    /* ---------------------------------------------
+       HEADER
+       --------------------------------------------- */
+
+    .header {
+        height: 62px;
+
+        min-height: 62px;
+
+        padding:
+            0 10px;
+
+        padding-top:
+            env(safe-area-inset-top);
+
+        gap: 7px;
+    }
+
+    .mobile-menu-button {
+        display: flex;
+    }
+
+    .header-info {
+        gap: 8px;
+
+        min-width: 0;
+    }
+
+    .veyra-avatar {
+        width: 34px;
+        height: 34px;
+
+        font-size: 14px;
+    }
+
+    .header h1 {
+        font-size: 14px;
+
+        white-space: nowrap;
+    }
+
+    .status {
+        font-size: 10px;
+    }
+
+    .status-dot {
+        width: 6px;
+        height: 6px;
+    }
+
+
+    /* ---------------------------------------------
+       PERFIL
+       --------------------------------------------- */
+
+    .user-profile {
+        margin-left: auto;
+
+        flex-shrink: 0;
+    }
+
+    .user-profile-button {
+        padding: 4px;
+    }
+
+    .user-avatar {
+        width: 34px;
+        height: 34px;
+
+        font-size: 13px;
     }
 
     .user-profile-text {
@@ -1456,31 +1695,334 @@ button {
     }
 
     .user-profile-menu {
-        right: -5px;
+        position: fixed;
+
+        top: 70px;
+
+        right: 10px;
+
+        width: min(
+            245px,
+            calc(100vw - 20px)
+        );
+
+        max-width:
+            calc(100vw - 20px);
     }
-}
 
 
-@media (max-width: 560px) {
+    /* ---------------------------------------------
+       CHAT
+       --------------------------------------------- */
 
-    .sidebar {
-        display: none;
+    .chat {
+        flex: 1;
+
+        width: 100%;
+
+        min-height: 0;
+
+        padding:
+            20px 12px 18px;
+
+        overflow-x: hidden;
+
+        -webkit-overflow-scrolling: touch;
     }
 
-    .auth-card {
-        padding: 27px 22px;
-    }
+
+    /* ---------------------------------------------
+       WELCOME
+       --------------------------------------------- */
 
     .welcome {
-        margin-top: 30px;
+        width: 100%;
+
+        max-width: 100%;
+
+        margin:
+            28px auto 0;
+
+        padding:
+            0 5px;
+    }
+
+    .welcome-icon {
+        width: 52px;
+        height: 52px;
+
+        margin-bottom: 15px;
+
+        border-radius: 15px;
+
+        font-size: 22px;
     }
 
     .welcome h2 {
         font-size: 21px;
+
+        line-height: 1.25;
+
+        margin-bottom: 8px;
     }
 
     .welcome p {
         font-size: 13px;
+
+        line-height: 1.55;
+
+        max-width: 330px;
+
+        margin:
+            0 auto 20px;
+    }
+
+
+    /* ---------------------------------------------
+       SUGESTÕES
+       --------------------------------------------- */
+
+    .suggestions {
+        width: 100%;
+
+        max-width: 100%;
+
+        grid-template-columns: 1fr;
+
+        gap: 8px;
+    }
+
+    .suggestion {
+        min-height: 50px;
+
+        padding:
+            11px 13px;
+
+        font-size: 12px;
+
+        border-radius: 11px;
+    }
+
+
+    /* ---------------------------------------------
+       MENSAGENS
+       --------------------------------------------- */
+
+    .message {
+        margin-bottom: 17px;
+    }
+
+    .message-bubble {
+        max-width: 92%;
+
+        padding:
+            11px 13px;
+
+        border-radius: 14px;
+
+        font-size: 14px;
+
+        line-height: 1.55;
+    }
+
+    .message.user
+    .message-bubble {
+        border-bottom-right-radius: 5px;
+    }
+
+    .message.assistant
+    .message-bubble {
+        border-bottom-left-radius: 5px;
+    }
+
+
+    /* ---------------------------------------------
+       IMAGENS
+       --------------------------------------------- */
+
+    .message-image {
+        max-width:
+            min(280px, 75vw);
+
+        max-height: 280px;
+
+        border-radius: 10px;
+    }
+
+
+    /* ---------------------------------------------
+       CÓDIGO
+       --------------------------------------------- */
+
+    .message-bubble pre {
+        max-width: 100%;
+
+        margin:
+            10px 0;
+
+        padding: 11px;
+
+        overflow-x: auto;
+
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .message-bubble pre code {
+        font-size: 11px;
+    }
+
+
+    /* ---------------------------------------------
+       INPUT
+       --------------------------------------------- */
+
+    .input-area {
+        width: 100%;
+
+        flex-shrink: 0;
+
+        padding:
+            8px
+            10px
+            max(10px, env(safe-area-inset-bottom));
+
+        background: #08090d;
+    }
+
+    .input-box {
+        min-height: 50px;
+
+        gap: 5px;
+
+        padding:
+            6px 6px 6px 9px;
+
+        border-radius: 14px;
+    }
+
+    .input-box textarea {
+        min-height: 36px;
+
+        max-height: 130px;
+
+        font-size: 16px;
+
+        line-height: 1.4;
+
+        padding:
+            8px 2px;
+    }
+
+    .image-button,
+    .send-button {
+        width: 36px;
+        height: 36px;
+
+        min-width: 36px;
+        min-height: 36px;
+
+        border-radius: 10px;
+    }
+
+
+    /* ---------------------------------------------
+       PREVIEW DA IMAGEM
+       --------------------------------------------- */
+
+    .image-preview {
+        width: 85px;
+        height: 85px;
+
+        margin-bottom: 8px;
+    }
+
+    .input-info {
+        display: none;
+    }
+
+
+    /* ---------------------------------------------
+       LOGIN
+       --------------------------------------------- */
+
+    .auth-screen {
+        min-height: 100dvh;
+
+        padding: 15px;
+
+        overflow-y: auto;
+    }
+
+    .auth-card {
+        width: 100%;
+
+        max-width: 390px;
+
+        padding:
+            27px 20px;
+
+        border-radius: 16px;
+    }
+
+    .auth-logo {
+        margin-bottom: 25px;
+    }
+
+    .auth-card h1 {
+        font-size: 22px;
+    }
+
+    .auth-card > p {
+        font-size: 13px;
+    }
+
+    .auth-field input {
+        height: 46px;
+
+        font-size: 16px;
+    }
+
+    .auth-button {
+        height: 47px;
+
+        font-size: 14px;
+    }
+
+}
+
+
+/* =====================================================
+   CELULARES PEQUENOS
+   ===================================================== */
+
+@media (max-width: 390px) {
+
+    .header {
+        padding-left: 7px;
+        padding-right: 7px;
+    }
+
+    .header h1 {
+        font-size: 13px;
+    }
+
+    .status {
+        font-size: 9px;
+    }
+
+    .veyra-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .chat {
+        padding-left: 9px;
+        padding-right: 9px;
     }
 
     .message-bubble {
@@ -1489,11 +2031,54 @@ button {
         font-size: 13px;
     }
 
-    .input-info {
+    .welcome h2 {
+        font-size: 20px;
+    }
+
+    .welcome p {
+        font-size: 12px;
+    }
+
+    .input-box textarea {
+        font-size: 16px;
+    }
+
+}
+
+
+/* =====================================================
+   DESKTOP
+   ===================================================== */
+
+@media (min-width: 701px) {
+
+    .mobile-menu-button {
         display: none;
     }
 
-    .user-profile-menu {
-        width: 230px;
+}
+
+
+/* =====================================================
+   ACESSIBILIDADE
+   ===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration:
+            0.01ms !important;
+
+        animation-iteration-count:
+            1 !important;
+
+        transition-duration:
+            0.01ms !important;
+
+        scroll-behavior:
+            auto !important;
     }
+
 }
