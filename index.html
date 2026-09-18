@@ -2,23 +2,39 @@
 <html lang="pt-BR">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <meta
+        name="theme-color"
+        content="#08090d">
 
     <title>Veyra IA</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link
+        rel="stylesheet"
+        href="style.css">
+
 </head>
 
+
 <body>
+
 
 <!-- =====================================================
      TELA DE LOGIN
      ===================================================== -->
 
-<div id="authScreen" class="auth-screen">
+<div
+    id="authScreen"
+    class="auth-screen">
 
     <div class="auth-card">
+
 
         <div class="auth-logo">
 
@@ -27,19 +43,29 @@
             </div>
 
             <div>
-                <strong>Veyra</strong>
-                <span>IA</span>
+
+                <strong>
+                    Veyra
+                </strong>
+
+                <span>
+                    IA
+                </span>
+
             </div>
 
         </div>
+
 
         <h1 id="authTitle">
             Entrar na Veyra
         </h1>
 
+
         <p id="authSubtitle">
             Entre na sua conta para continuar.
         </p>
+
 
         <div
             id="nameGroup"
@@ -57,6 +83,7 @@
 
         </div>
 
+
         <div class="auth-field">
 
             <label for="authEmail">
@@ -70,6 +97,7 @@
                 autocomplete="email">
 
         </div>
+
 
         <div class="auth-field">
 
@@ -85,6 +113,7 @@
 
         </div>
 
+
         <button
             id="authButton"
             class="auth-button"
@@ -94,10 +123,12 @@
 
         </button>
 
+
         <p
             id="authError"
             class="auth-error">
         </p>
+
 
         <button
             id="authToggle"
@@ -111,6 +142,7 @@
     </div>
 
 </div>
+
 
 
 <!-- =====================================================
@@ -128,6 +160,9 @@
 
     <aside class="sidebar">
 
+
+        <!-- LOGO -->
+
         <div class="logo">
 
             <div class="logo-icon">
@@ -135,12 +170,21 @@
             </div>
 
             <div>
-                <strong>Veyra</strong>
-                <span>IA</span>
+
+                <strong>
+                    Veyra
+                </strong>
+
+                <span>
+                    IA
+                </span>
+
             </div>
 
         </div>
 
+
+        <!-- NOVA CONVERSA -->
 
         <button
             id="newChat"
@@ -152,10 +196,16 @@
         </button>
 
 
+        <!-- TÍTULO -->
+
         <div class="sidebar-title">
+
             Conversas
+
         </div>
 
+
+        <!-- CONVERSAS -->
 
         <div
             id="conversationList"
@@ -163,7 +213,10 @@
         </div>
 
 
+        <!-- PARTE INFERIOR -->
+
         <div class="sidebar-bottom">
+
 
             <button
                 id="settingsBtn"
@@ -184,9 +237,11 @@
 
             </button>
 
+
         </div>
 
     </aside>
+
 
 
     <!-- =================================================
@@ -196,15 +251,38 @@
     <main class="main">
 
 
-        <!-- HEADER -->
+        <!-- =================================================
+             HEADER
+             ================================================= -->
 
         <header class="header">
 
+
+            <!-- BOTÃO MOBILE -->
+
+            <button
+                id="mobileMenuButton"
+                class="mobile-menu-button"
+                type="button"
+                aria-label="Abrir menu"
+                aria-expanded="false">
+
+                ☰
+
+            </button>
+
+
+            <!-- INFORMAÇÕES DA VEYRA -->
+
             <div class="header-info">
 
+
                 <div class="veyra-avatar">
+
                     V
+
                 </div>
+
 
                 <div>
 
@@ -212,22 +290,29 @@
                         Veyra IA
                     </h1>
 
+
                     <div class="status">
+
 
                         <span
                             id="statusDot"
                             class="status-dot">
                         </span>
 
+
                         <span id="statusText">
+
                             Veyra pronta
+
                         </span>
+
 
                     </div>
 
                 </div>
 
             </div>
+
 
 
             <!-- =================================================
@@ -238,11 +323,14 @@
                 id="userProfile"
                 class="user-profile">
 
+
                 <button
                     id="userProfileButton"
                     class="user-profile-button"
                     type="button"
-                    title="Perfil">
+                    title="Perfil"
+                    aria-label="Abrir perfil">
+
 
                     <div
                         id="userAvatar"
@@ -252,32 +340,49 @@
 
                     </div>
 
+
                     <div class="user-profile-text">
 
+
                         <strong id="userName">
+
                             Usuário
+
                         </strong>
 
+
                         <span id="userEmail">
+
                             conta
+
                         </span>
+
 
                     </div>
 
+
                     <span class="profile-arrow">
+
                         ▾
+
                     </span>
+
 
                 </button>
 
 
-                <!-- MENU -->
+
+                <!-- =================================================
+                     MENU DO PERFIL
+                     ================================================= -->
 
                 <div
                     id="userProfileMenu"
                     class="user-profile-menu hidden">
 
+
                     <div class="profile-menu-header">
+
 
                         <div
                             id="menuUserAvatar"
@@ -287,23 +392,34 @@
 
                         </div>
 
+
                         <div>
 
+
                             <strong id="menuUserName">
+
                                 Usuário
+
                             </strong>
 
+
                             <span id="menuUserEmail">
+
                                 conta
+
                             </span>
+
 
                         </div>
 
+
                     </div>
+
 
 
                     <div class="profile-menu-line">
                     </div>
+
 
 
                     <button
@@ -315,6 +431,7 @@
                     </button>
 
 
+
                     <button
                         id="profileLogout"
                         type="button"
@@ -324,11 +441,15 @@
 
                     </button>
 
+
                 </div>
+
 
             </div>
 
+
         </header>
+
 
 
         <!-- =================================================
@@ -339,6 +460,7 @@
             id="chat"
             class="chat">
         </section>
+
 
 
         <!-- =================================================
@@ -354,20 +476,27 @@
                 id="imagePreview"
                 class="image-preview hidden">
 
+
                 <img
                     id="previewImage"
                     alt="Imagem selecionada">
 
+
                 <button
                     id="removeImage"
-                    type="button">
+                    type="button"
+                    aria-label="Remover imagem">
 
                     ×
 
                 </button>
 
+
             </div>
 
+
+
+            <!-- CAIXA DE TEXTO -->
 
             <div class="input-box">
 
@@ -378,7 +507,8 @@
                     id="imageButton"
                     class="image-button"
                     type="button"
-                    title="Enviar imagem">
+                    title="Enviar imagem"
+                    aria-label="Enviar imagem">
 
                     🖼️
 
@@ -392,13 +522,14 @@
                     hidden>
 
 
+
                 <!-- TEXTO -->
 
                 <textarea
                     id="messageInput"
                     placeholder="Digite sua mensagem..."
-                    rows="1">
-                </textarea>
+                    rows="1"></textarea>
+
 
 
                 <!-- ENVIAR -->
@@ -407,41 +538,68 @@
                     id="sendButton"
                     class="send-button"
                     type="button"
-                    title="Enviar">
+                    title="Enviar"
+                    aria-label="Enviar mensagem">
 
                     ➤
 
                 </button>
 
+
             </div>
 
+
+
+            <!-- INFORMAÇÕES -->
 
             <div class="input-info">
 
+
                 <span id="modelStatus">
+
                     Veyra online
+
                 </span>
 
+
                 <span>
+
                     Veyra IA • API
+
                 </span>
+
 
             </div>
 
+
         </div>
+
 
     </main>
 
+
 </div>
+
 
 
 <!-- =====================================================
      SUPABASE
      ===================================================== -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+</script>
 
-<script src="script.js"></script>
+
+<!-- =====================================================
+     SCRIPT DA VEYRA
+     ===================================================== -->
+
+<script
+    src="script.js">
+</script>
+
 
 </body>
+
 </html>
