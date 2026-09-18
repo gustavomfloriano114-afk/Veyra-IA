@@ -1,8 +1,7 @@
-````javascript
 /* =====================================================
    VEYRA IA 0.8
    SCRIPT COMPLETO
-   OpenRouter protegido por Supabase Edge Function
+   Supabase Auth + Conversas + Edge Function
    ===================================================== */
 
 /* =====================================================
@@ -58,7 +57,6 @@ const supabaseClient =
 const Veyra = {
     name: "Veyra",
     version: "0.8.0",
-
     model: "openrouter/free",
 
     storageKey: "veyra_data",
@@ -326,6 +324,7 @@ function setAuthMode(modo) {
     clearAuthFields();
 
     if (modo === "signup") {
+
         if (authTitle) {
             authTitle.textContent =
                 "Criar conta";
@@ -349,7 +348,9 @@ function setAuthMode(modo) {
             authToggle.textContent =
                 "Já tenho uma conta";
         }
+
     } else {
+
         if (authTitle) {
             authTitle.textContent =
                 "Bem-vindo à Veyra";
@@ -381,6 +382,7 @@ function setAuthMode(modo) {
    ===================================================== */
 
 function traduzirErroAuth(erro) {
+
     const mensagem =
         String(
             erro?.message || ""
@@ -445,6 +447,7 @@ function traduzirErroAuth(erro) {
    ===================================================== */
 
 async function signUp() {
+
     const nome =
         authName?.value.trim() || "";
 
@@ -455,12 +458,16 @@ async function signUp() {
         authPassword?.value || "";
 
     if (!nome) {
-        setAuthError("Digite seu nome.");
+        setAuthError(
+            "Digite seu nome."
+        );
         return;
     }
 
     if (!email) {
-        setAuthError("Digite seu e-mail.");
+        setAuthError(
+            "Digite seu e-mail."
+        );
         return;
     }
 
@@ -480,6 +487,7 @@ async function signUp() {
     }
 
     try {
+
         const {
             data,
             error
@@ -487,6 +495,7 @@ async function signUp() {
             await supabaseClient.auth.signUp({
                 email,
                 password: senha,
+
                 options: {
                     data: {
                         name: nome
@@ -499,6 +508,7 @@ async function signUp() {
         }
 
         if (!data.session) {
+
             setAuthError(
                 "Conta criada! Verifique seu e-mail para confirmar a conta e depois entre."
             );
@@ -520,6 +530,7 @@ async function signUp() {
         );
 
     } catch (erro) {
+
         console.error(
             "Erro no cadastro:",
             erro
@@ -528,7 +539,9 @@ async function signUp() {
         setAuthError(
             traduzirErroAuth(erro)
         );
+
     } finally {
+
         if (authButton) {
             authButton.disabled = false;
 
@@ -545,6 +558,7 @@ async function signUp() {
    ===================================================== */
 
 async function signIn() {
+
     const email =
         authEmail?.value.trim() || "";
 
@@ -552,12 +566,16 @@ async function signIn() {
         authPassword?.value || "";
 
     if (!email) {
-        setAuthError("Digite seu e-mail.");
+        setAuthError(
+            "Digite seu e-mail."
+        );
         return;
     }
 
     if (!senha) {
-        setAuthError("Digite sua senha.");
+        setAuthError(
+            "Digite sua senha."
+        );
         return;
     }
 
@@ -570,6 +588,7 @@ async function signIn() {
     }
 
     try {
+
         const {
             data,
             error
@@ -591,6 +610,7 @@ async function signIn() {
         );
 
     } catch (erro) {
+
         console.error(
             "Erro no login:",
             erro
@@ -599,7 +619,9 @@ async function signIn() {
         setAuthError(
             traduzirErroAuth(erro)
         );
+
     } finally {
+
         if (authButton) {
             authButton.disabled = false;
 
@@ -616,7 +638,9 @@ async function signIn() {
    ===================================================== */
 
 async function signOut() {
+
     try {
+
         const {
             error
         } =
@@ -627,6 +651,7 @@ async function signOut() {
         }
 
     } catch (erro) {
+
         console.error(
             "Erro ao sair:",
             erro
@@ -656,13 +681,10 @@ async function signOut() {
     }
 
     fecharMenuPerfil();
-
     limparPerfilVisual();
 
     showAuth();
-
     setAuthMode("login");
-
     atualizarStatus();
 }
 
@@ -671,6 +693,7 @@ async function signOut() {
    ===================================================== */
 
 function obterDadosPerfil(user) {
+
     if (!user) {
         return {
             nome: "Usuário",
@@ -708,6 +731,7 @@ function obterDadosPerfil(user) {
 }
 
 function obterInicial(nome) {
+
     const texto =
         String(
             nome || "U"
@@ -727,6 +751,7 @@ function criarAvatarElemento(
     nome,
     foto
 ) {
+
     if (!elemento) {
         return;
     }
@@ -734,21 +759,26 @@ function criarAvatarElemento(
     elemento.innerHTML = "";
 
     if (foto) {
+
         const img =
             document.createElement("img");
 
         img.src = foto;
         img.alt = nome;
+
         img.referrerPolicy =
             "no-referrer";
 
         img.onerror = () => {
+
             elemento.innerHTML = "";
+
             elemento.textContent =
                 obterInicial(nome);
         };
 
         elemento.appendChild(img);
+
         return;
     }
 
@@ -757,6 +787,7 @@ function criarAvatarElemento(
 }
 
 function atualizarPerfil() {
+
     if (!currentUser) {
         return;
     }
@@ -800,6 +831,7 @@ function atualizarPerfil() {
 }
 
 function limparPerfilVisual() {
+
     if (userName) {
         userName.textContent =
             "Usuário";
@@ -830,6 +862,7 @@ function limparPerfilVisual() {
 }
 
 function alternarMenuPerfil() {
+
     if (!userProfileMenu) {
         return;
     }
@@ -840,6 +873,7 @@ function alternarMenuPerfil() {
 }
 
 function fecharMenuPerfil() {
+
     if (!userProfileMenu) {
         return;
     }
@@ -854,11 +888,13 @@ function fecharMenuPerfil() {
    ===================================================== */
 
 async function carregarConversasSupabase() {
+
     if (!currentUser) {
         return;
     }
 
     try {
+
         const {
             data,
             error
@@ -909,8 +945,13 @@ async function carregarConversasSupabase() {
         if (
             database.conversations.length === 0
         ) {
-            await criarNovaConversa(false);
+
+            await criarNovaConversa(
+                false
+            );
+
         } else {
+
             database.currentConversation =
                 database
                     .conversations[0]
@@ -918,10 +959,12 @@ async function carregarConversasSupabase() {
         }
 
         salvarLocal();
+
         renderizarConversas();
         carregarConversaAtual();
 
     } catch (erro) {
+
         console.error(
             "Erro ao carregar conversas:",
             erro
@@ -939,6 +982,7 @@ async function carregarConversasSupabase() {
 async function salvarConversaSupabase(
     conversa
 ) {
+
     if (
         !currentUser ||
         !conversa
@@ -947,6 +991,7 @@ async function salvarConversaSupabase(
     }
 
     const payload = {
+
         id:
             conversa.id,
 
@@ -966,6 +1011,7 @@ async function salvarConversaSupabase(
     };
 
     try {
+
         const {
             data,
             error
@@ -993,6 +1039,7 @@ async function salvarConversaSupabase(
         salvarLocal();
 
     } catch (erro) {
+
         console.error(
             "Erro ao salvar conversa:",
             erro
@@ -1009,6 +1056,7 @@ async function salvarConversaSupabase(
 async function deletarConversa(
     conversaId
 ) {
+
     if (!conversaId) {
         return;
     }
@@ -1025,7 +1073,9 @@ async function deletarConversa(
     }
 
     if (currentUser) {
+
         try {
+
             const {
                 error
             } =
@@ -1046,6 +1096,7 @@ async function deletarConversa(
             }
 
         } catch (erro) {
+
             console.error(
                 "Erro ao excluir conversa:",
                 erro
@@ -1066,6 +1117,7 @@ async function deletarConversa(
         database.currentConversation ===
         conversaId
     ) {
+
         database.currentConversation =
             database.conversations.length
                 ? database.conversations[0].id
@@ -1073,6 +1125,7 @@ async function deletarConversa(
     }
 
     salvarLocal();
+
     renderizarConversas();
     carregarConversaAtual();
 }
@@ -1084,7 +1137,9 @@ async function deletarConversa(
 async function criarNovaConversa(
     salvarOnline = true
 ) {
+
     const conversa = {
+
         id:
             gerarId(),
 
@@ -1109,10 +1164,12 @@ async function criarNovaConversa(
         conversa.id;
 
     salvarLocal();
+
     renderizarConversas();
     carregarConversaAtual();
 
     if (salvarOnline) {
+
         await salvarConversaSupabase(
             conversa
         );
@@ -1128,11 +1185,13 @@ async function criarNovaConversa(
    ===================================================== */
 
 function gerarId() {
+
     if (
         window.crypto &&
         typeof window.crypto.randomUUID ===
             "function"
     ) {
+
         return window.crypto.randomUUID();
     }
 
@@ -1151,6 +1210,7 @@ function gerarId() {
    ===================================================== */
 
 function obterConversaAtual() {
+
     if (
         !database.currentConversation
     ) {
@@ -1169,6 +1229,7 @@ function obterConversaAtual() {
    ===================================================== */
 
 function renderizarConversas() {
+
     if (!conversationList) {
         return;
     }
@@ -1177,6 +1238,7 @@ function renderizarConversas() {
 
     database.conversations.forEach(
         conversa => {
+
             const item =
                 document.createElement("button");
 
@@ -1187,7 +1249,10 @@ function renderizarConversas() {
                 conversa.id ===
                 database.currentConversation
             ) {
-                item.classList.add("active");
+
+                item.classList.add(
+                    "active"
+                );
             }
 
             const titulo =
@@ -1197,15 +1262,19 @@ function renderizarConversas() {
                 conversa.title ||
                 "Nova conversa";
 
-            item.appendChild(titulo);
+            item.appendChild(
+                titulo
+            );
 
             item.addEventListener(
                 "click",
                 () => {
+
                     database.currentConversation =
                         conversa.id;
 
                     salvarLocal();
+
                     renderizarConversas();
                     carregarConversaAtual();
                 }
@@ -1223,6 +1292,7 @@ function renderizarConversas() {
    ===================================================== */
 
 function carregarConversaAtual() {
+
     if (!chat) {
         return;
     }
@@ -1241,12 +1311,14 @@ function carregarConversaAtual() {
         !conversa.messages ||
         conversa.messages.length === 0
     ) {
+
         showWelcome();
         return;
     }
 
     conversa.messages.forEach(
         mensagem => {
+
             addMessage(
                 mensagem.role,
                 mensagem.content,
@@ -1264,12 +1336,14 @@ function carregarConversaAtual() {
    ===================================================== */
 
 function showWelcome() {
+
     if (!chat) {
         return;
     }
 
     chat.innerHTML = `
         <div class="welcome">
+
             <div class="welcome-icon">
                 V
             </div>
@@ -1284,6 +1358,7 @@ function showWelcome() {
             </p>
 
             <div class="suggestions">
+
                 <button
                     class="suggestion"
                     data-prompt="Explique um assunto difícil de maneira simples."
@@ -1311,6 +1386,7 @@ function showWelcome() {
                 >
                     Me ajude a resolver um problema
                 </button>
+
             </div>
         </div>
     `;
@@ -1319,14 +1395,18 @@ function showWelcome() {
         .querySelectorAll(".suggestion")
         .forEach(
             botao => {
+
                 botao.addEventListener(
                     "click",
                     () => {
+
                         if (messageInput) {
+
                             messageInput.value =
                                 botao.dataset.prompt;
 
                             ajustarTextarea();
+
                             messageInput.focus();
                         }
                     }
@@ -1345,6 +1425,7 @@ function addMessage(
     scroll = true,
     image = null
 ) {
+
     if (!chat) {
         return;
     }
@@ -1367,6 +1448,7 @@ function addMessage(
         "message-bubble";
 
     if (image) {
+
         const img =
             document.createElement("img");
 
@@ -1379,6 +1461,7 @@ function addMessage(
     }
 
     if (content) {
+
         const texto =
             document.createElement("div");
 
@@ -1388,9 +1471,13 @@ function addMessage(
         bubble.appendChild(texto);
     }
 
-    message.appendChild(bubble);
+    message.appendChild(
+        bubble
+    );
 
-    chat.appendChild(message);
+    chat.appendChild(
+        message
+    );
 
     if (scroll) {
         scrollChat();
@@ -1402,6 +1489,7 @@ function addMessage(
    ===================================================== */
 
 function escaparHTML(texto) {
+
     const div =
         document.createElement("div");
 
@@ -1412,6 +1500,7 @@ function escaparHTML(texto) {
 }
 
 function formatarResposta(texto) {
+
     if (!texto) {
         return "";
     }
@@ -1430,6 +1519,7 @@ function formatarResposta(texto) {
                 match,
                 codigo
             ) => {
+
                 const indice =
                     blocosCodigo.length;
 
@@ -1468,6 +1558,7 @@ function formatarResposta(texto) {
             codigo,
             indice
         ) => {
+
             const placeholder =
                 "___VEYRA_CODE_" +
                 indice +
@@ -1494,6 +1585,7 @@ function formatarResposta(texto) {
    ===================================================== */
 
 function showThinking() {
+
     removeThinking();
 
     if (!chat) {
@@ -1515,7 +1607,9 @@ function showThinking() {
         <span></span>
     `;
 
-    chat.appendChild(thinking);
+    chat.appendChild(
+        thinking
+    );
 
     scrollChat();
 }
@@ -1525,6 +1619,7 @@ function hideThinking() {
 }
 
 function removeThinking() {
+
     const thinking =
         document.getElementById(
             "veyra-thinking"
@@ -1540,12 +1635,14 @@ function removeThinking() {
    ===================================================== */
 
 function scrollChat() {
+
     if (!chat) {
         return;
     }
 
     requestAnimationFrame(
         () => {
+
             chat.scrollTop =
                 chat.scrollHeight;
         }
@@ -1553,8 +1650,145 @@ function scrollChat() {
 }
 
 /* =====================================================
+   CONVERTER HISTÓRICO
+   PARA FORMATO OPENAI
+   ===================================================== */
+
+function criarMensagensIA(
+    texto,
+    imagemBase64,
+    historico
+) {
+
+    const mensagens = [];
+
+    mensagens.push({
+        role: "system",
+        content: Veyra.personality
+    });
+
+    const historicoLimitado =
+        Array.isArray(historico)
+            ? historico.slice(-8)
+            : [];
+
+    historicoLimitado.forEach(
+        mensagem => {
+
+            if (
+                !mensagem ||
+                !mensagem.role
+            ) {
+                return;
+            }
+
+            if (
+                mensagem.role !== "user" &&
+                mensagem.role !== "assistant"
+            ) {
+                return;
+            }
+
+            if (
+                !mensagem.content &&
+                !mensagem.image
+            ) {
+                return;
+            }
+
+            /*
+               Imagens são enviadas separadamente
+               apenas para a mensagem atual.
+            */
+
+            if (
+                mensagem.role === "user" &&
+                mensagem.image
+            ) {
+
+                mensagens.push({
+                    role: "user",
+                    content: [
+                        {
+                            type: "text",
+                            text:
+                                mensagem.content ||
+                                "Analise esta imagem."
+                        },
+                        {
+                            type: "image_url",
+                            image_url: {
+                                url:
+                                    mensagem.image
+                            }
+                        }
+                    ]
+                });
+
+            } else {
+
+                mensagens.push({
+                    role:
+                        mensagem.role,
+
+                    content:
+                        mensagem.content || ""
+                });
+            }
+        }
+    );
+
+    /*
+       Evita duplicar a mensagem atual.
+       O histórico já contém a mensagem do usuário
+       quando enviarMensagem() chama esta função.
+    */
+
+    if (
+        !historicoLimitado.length ||
+        historicoLimitado[
+            historicoLimitado.length - 1
+        ]?.content !== texto
+    ) {
+
+        if (imagemBase64) {
+
+            mensagens.push({
+                role: "user",
+
+                content: [
+                    {
+                        type: "text",
+                        text:
+                            texto ||
+                            "Analise esta imagem."
+                    },
+                    {
+                        type: "image_url",
+                        image_url: {
+                            url:
+                                imagemBase64
+                        }
+                    }
+                ]
+            });
+
+        } else {
+
+            mensagens.push({
+                role: "user",
+                content:
+                    texto || ""
+            });
+        }
+    }
+
+    return mensagens;
+}
+
+/* =====================================================
    VEYRA IA
-   AGORA PASSA PELA EDGE FUNCTION
+   EDGE FUNCTION
    ===================================================== */
 
 async function perguntarIA(
@@ -1562,85 +1796,248 @@ async function perguntarIA(
     imagemBase64,
     historico
 ) {
+
     if (!currentUser) {
         throw new Error(
             "Você precisa estar conectado."
         );
     }
 
-    const historicoLimitado =
-        Array.isArray(historico)
-            ? historico.slice(-8)
-            : [];
+    /*
+       Obtém a sessão atual.
+    */
 
-    const resposta =
-        await fetch(
-            VEYRA_API_URL,
-            {
-                method: "POST",
+    let session = null;
 
-                headers: {
-                    "Content-Type":
-                        "application/json",
+    try {
 
-                    "Authorization":
-                        "Bearer " +
-                        (
-                            await supabaseClient.auth.getSession()
-                        ).data.session?.access_token
-                },
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.auth.getSession();
 
-                body:
-                    JSON.stringify({
-                        texto:
-                            texto || "",
+        if (error) {
+            throw error;
+        }
 
-                        imagem:
-                            imagemBase64 || null,
+        session =
+            data?.session || null;
 
-                        historico:
-                            historicoLimitado,
+    } catch (erro) {
 
-                        personalidade:
-                            Veyra.personality
-                    })
-            }
+        console.error(
+            "Erro ao obter sessão:",
+            erro
         );
+    }
+
+    /*
+       Se não houver sessão, tenta renovar.
+    */
+
+    if (!session?.access_token) {
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient.auth.refreshSession();
+
+            if (error) {
+                throw error;
+            }
+
+            session =
+                data?.session || null;
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao renovar sessão:",
+                erro
+            );
+
+            throw new Error(
+                "Sua sessão expirou. Entre novamente na sua conta."
+            );
+        }
+    }
+
+    if (!session?.access_token) {
+
+        throw new Error(
+            "Sua sessão não está disponível. Entre novamente na conta."
+        );
+    }
+
+    /*
+       Cria o formato correto para a Edge Function.
+    */
+
+    const messages =
+        criarMensagensIA(
+            texto,
+            imagemBase64,
+            historico
+        );
+
+    if (
+        !Array.isArray(messages) ||
+        messages.length === 0
+    ) {
+
+        throw new Error(
+            "Nenhuma mensagem foi preparada para a Veyra."
+        );
+    }
+
+    let resposta;
+
+    try {
+
+        resposta =
+            await fetch(
+                VEYRA_API_URL,
+                {
+                    method: "POST",
+
+                    mode: "cors",
+
+                    cache: "no-store",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "Authorization":
+                            "Bearer " +
+                            session.access_token
+                    },
+
+                    body:
+                        JSON.stringify({
+                            messages
+                        })
+                }
+            );
+
+    } catch (erro) {
+
+        console.error(
+            "Erro de conexão:",
+            erro
+        );
+
+        throw new Error(
+            "Não foi possível conectar à Veyra. Verifique sua internet e tente novamente."
+        );
+    }
 
     let dados = null;
 
     try {
+
         dados =
             await resposta.json();
-    } catch {
+
+    } catch (erro) {
+
+        console.error(
+            "Resposta inválida:",
+            erro
+        );
+
         throw new Error(
-            "A API retornou uma resposta inválida."
+            "O servidor da Veyra enviou uma resposta inválida."
         );
     }
 
+    /*
+       Erros HTTP.
+    */
+
     if (!resposta.ok) {
+
+        console.error(
+            "Erro da Edge Function:",
+            resposta.status,
+            dados
+        );
+
+        if (
+            resposta.status === 401
+        ) {
+
+            throw new Error(
+                "Sua sessão não foi aceita pelo servidor. Entre novamente na conta."
+            );
+        }
+
+        if (
+            resposta.status === 402
+        ) {
+
+            throw new Error(
+                "A OpenRouter informou que não há créditos disponíveis."
+            );
+        }
+
+        if (
+            resposta.status === 429
+        ) {
+
+            throw new Error(
+                "A Veyra está recebendo muitas solicitações. Aguarde alguns segundos."
+            );
+        }
+
+        if (
+            resposta.status >= 500
+        ) {
+
+            throw new Error(
+                dados?.error ||
+                dados?.message ||
+                "O servidor da Veyra encontrou um erro."
+            );
+        }
+
         throw new Error(
             dados?.error ||
             dados?.message ||
-            "Erro na Veyra."
+            "Erro ao conversar com a Veyra."
         );
     }
 
+    /*
+       OpenRouter normalmente retorna:
+       choices[0].message.content
+    */
+
     const conteudo =
+        dados?.choices?.[0]?.message?.content ||
         dados?.content ||
         dados?.resposta ||
-        dados?.answer ||
-        dados?.choices?.[0]?.message?.content;
+        dados?.answer;
 
     if (
         typeof conteudo === "string" &&
         conteudo.trim()
     ) {
+
         return conteudo.trim();
     }
 
+    console.error(
+        "Resposta sem conteúdo:",
+        dados
+    );
+
     throw new Error(
-        "A Veyra não recebeu uma resposta válida."
+        "A Veyra recebeu uma resposta vazia."
     );
 }
 
@@ -1649,6 +2046,7 @@ async function perguntarIA(
    ===================================================== */
 
 async function enviarMensagem() {
+
     if (isSending) {
         return;
     }
@@ -1664,11 +2062,13 @@ async function enviarMensagem() {
     }
 
     if (!currentUser) {
+
         setAuthError(
             "Faça login para usar a Veyra."
         );
 
         showAuth();
+
         return;
     }
 
@@ -1676,6 +2076,7 @@ async function enviarMensagem() {
         obterConversaAtual();
 
     if (!conversa) {
+
         await criarNovaConversa();
 
         conversa =
@@ -1702,6 +2103,7 @@ async function enviarMensagem() {
     if (
         conversa.messages.length === 0
     ) {
+
         conversa.title =
             criarTitulo(
                 mensagemTexto
@@ -1709,6 +2111,7 @@ async function enviarMensagem() {
     }
 
     conversa.messages.push({
+
         role: "user",
 
         content:
@@ -1733,7 +2136,9 @@ async function enviarMensagem() {
     }
 
     ajustarTextarea();
+
     limparImagem();
+
     salvarLocal();
 
     await salvarConversaSupabase(
@@ -1743,6 +2148,7 @@ async function enviarMensagem() {
     showThinking();
 
     try {
+
         const resposta =
             await perguntarIA(
                 mensagemTexto,
@@ -1753,6 +2159,7 @@ async function enviarMensagem() {
         hideThinking();
 
         conversa.messages.push({
+
             role:
                 "assistant",
 
@@ -1781,6 +2188,7 @@ async function enviarMensagem() {
         renderizarConversas();
 
     } catch (erro) {
+
         hideThinking();
 
         console.error(
@@ -1802,6 +2210,7 @@ ${traduzirErroIA(erro)}
         );
 
     } finally {
+
         isSending = false;
 
         if (sendButton) {
@@ -1820,6 +2229,7 @@ ${traduzirErroIA(erro)}
    ===================================================== */
 
 function criarTitulo(texto) {
+
     const limpo =
         String(texto)
             .replace(/\s+/g, " ")
@@ -1844,6 +2254,7 @@ function criarTitulo(texto) {
    ===================================================== */
 
 function traduzirErroIA(erro) {
+
     const mensagem =
         String(
             erro?.message || ""
@@ -1858,15 +2269,23 @@ function traduzirErroIA(erro) {
     }
 
     if (
+        mensagem.includes(
+            "sessão"
+        )
+    ) {
+        return mensagem;
+    }
+
+    if (
         mensagem.includes("401")
     ) {
-        return "A autenticação da Veyra falhou.";
+        return "A autenticação da Veyra falhou. Entre novamente na conta.";
     }
 
     if (
         mensagem.includes("402")
     ) {
-        return "A OpenRouter informou que não há créditos suficientes.";
+        return "A OpenRouter informou que não há créditos disponíveis.";
     }
 
     if (
@@ -1892,6 +2311,7 @@ function traduzirErroIA(erro) {
    ===================================================== */
 
 function prepararImagem(file) {
+
     if (!file) {
         return;
     }
@@ -1899,6 +2319,7 @@ function prepararImagem(file) {
     if (
         !file.type.startsWith("image/")
     ) {
+
         alert(
             "Escolha um arquivo de imagem."
         );
@@ -1911,6 +2332,7 @@ function prepararImagem(file) {
 
     reader.onload =
         event => {
+
             selectedImage =
                 event.target.result;
 
@@ -1920,6 +2342,7 @@ function prepararImagem(file) {
             }
 
             if (imagePreview) {
+
                 imagePreview.classList.remove(
                     "hidden"
                 );
@@ -1930,6 +2353,7 @@ function prepararImagem(file) {
 }
 
 function limparImagem() {
+
     selectedImage = null;
 
     if (imageInput) {
@@ -1941,6 +2365,7 @@ function limparImagem() {
     }
 
     if (imagePreview) {
+
         imagePreview.classList.add(
             "hidden"
         );
@@ -1952,6 +2377,7 @@ function limparImagem() {
    ===================================================== */
 
 function ajustarTextarea() {
+
     if (!messageInput) {
         return;
     }
@@ -1971,6 +2397,7 @@ function ajustarTextarea() {
    ===================================================== */
 
 function abrirConfiguracoes() {
+
     const opcao =
         prompt(
             "CONFIGURAÇÕES DA VEYRA\n\n" +
@@ -1987,6 +2414,7 @@ function abrirConfiguracoes() {
     if (
         opcao.trim() === "2"
     ) {
+
         const confirmar =
             confirm(
                 "Deseja realmente sair da sua conta?\n\n" +
@@ -2003,6 +2431,7 @@ function abrirConfiguracoes() {
     if (
         opcao.trim() === "1"
     ) {
+
         alert(
             "Veyra IA\n\n" +
             "Status: Online\n" +
@@ -2025,6 +2454,7 @@ function abrirConfiguracoes() {
    ===================================================== */
 
 function abrirSobre() {
+
     alert(
         "Veyra IA\n\n" +
         "Versão " +
@@ -2039,7 +2469,9 @@ function abrirSobre() {
    ===================================================== */
 
 function atualizarStatus() {
+
     if (statusText) {
+
         statusText.textContent =
             currentUser
                 ? "Online"
@@ -2047,6 +2479,7 @@ function atualizarStatus() {
     }
 
     if (statusDot) {
+
         statusDot.classList.toggle(
             "offline",
             !currentUser
@@ -2054,6 +2487,7 @@ function atualizarStatus() {
     }
 
     if (modelStatus) {
+
         modelStatus.textContent =
             Veyra.model;
     }
@@ -2066,6 +2500,7 @@ function atualizarStatus() {
 async function iniciarAplicacao(
     user
 ) {
+
     currentUser =
         user;
 
@@ -2087,15 +2522,20 @@ async function iniciarAplicacao(
    ===================================================== */
 
 if (authButton) {
+
     authButton.addEventListener(
         "click",
         () => {
+
             if (
                 authMode ===
                 "signup"
             ) {
+
                 signUp();
+
             } else {
+
                 signIn();
             }
         }
@@ -2103,9 +2543,11 @@ if (authButton) {
 }
 
 if (authToggle) {
+
     authToggle.addEventListener(
         "click",
         () => {
+
             setAuthMode(
                 authMode ===
                     "login"
@@ -2126,6 +2568,7 @@ if (authToggle) {
     authName
 ].forEach(
     campo => {
+
         if (!campo) {
             return;
         }
@@ -2133,18 +2576,23 @@ if (authToggle) {
         campo.addEventListener(
             "keydown",
             event => {
+
                 if (
                     event.key ===
                     "Enter"
                 ) {
+
                     event.preventDefault();
 
                     if (
                         authMode ===
                         "signup"
                     ) {
+
                         signUp();
+
                     } else {
+
                         signIn();
                     }
                 }
@@ -2158,9 +2606,11 @@ if (authToggle) {
    ===================================================== */
 
 if (newChat) {
+
     newChat.addEventListener(
         "click",
         () => {
+
             criarNovaConversa();
         }
     );
@@ -2171,6 +2621,7 @@ if (newChat) {
    ===================================================== */
 
 if (sendButton) {
+
     sendButton.addEventListener(
         "click",
         enviarMensagem
@@ -2178,13 +2629,16 @@ if (sendButton) {
 }
 
 if (messageInput) {
+
     messageInput.addEventListener(
         "keydown",
         event => {
+
             if (
                 event.key === "Enter" &&
                 !event.shiftKey
             ) {
+
                 event.preventDefault();
 
                 enviarMensagem();
@@ -2203,18 +2657,22 @@ if (messageInput) {
    ===================================================== */
 
 if (imageButton) {
+
     imageButton.addEventListener(
         "click",
         () => {
+
             imageInput?.click();
         }
     );
 }
 
 if (imageInput) {
+
     imageInput.addEventListener(
         "change",
         event => {
+
             const file =
                 event.target.files?.[0];
 
@@ -2224,6 +2682,7 @@ if (imageInput) {
 }
 
 if (removeImage) {
+
     removeImage.addEventListener(
         "click",
         limparImagem
@@ -2235,6 +2694,7 @@ if (removeImage) {
    ===================================================== */
 
 if (settingsBtn) {
+
     settingsBtn.addEventListener(
         "click",
         abrirConfiguracoes
@@ -2242,6 +2702,7 @@ if (settingsBtn) {
 }
 
 if (aboutBtn) {
+
     aboutBtn.addEventListener(
         "click",
         abrirSobre
@@ -2253,29 +2714,37 @@ if (aboutBtn) {
    ===================================================== */
 
 if (userProfileButton) {
+
     userProfileButton.addEventListener(
         "click",
         event => {
+
             event.stopPropagation();
+
             alternarMenuPerfil();
         }
     );
 }
 
 if (profileSettings) {
+
     profileSettings.addEventListener(
         "click",
         () => {
+
             fecharMenuPerfil();
+
             abrirConfiguracoes();
         }
     );
 }
 
 if (profileLogout) {
+
     profileLogout.addEventListener(
         "click",
         () => {
+
             fecharMenuPerfil();
 
             const confirmar =
@@ -2294,12 +2763,14 @@ if (profileLogout) {
 document.addEventListener(
     "click",
     event => {
+
         if (
             userProfile &&
             !userProfile.contains(
                 event.target
             )
         ) {
+
             fecharMenuPerfil();
         }
     }
@@ -2314,25 +2785,39 @@ supabaseClient.auth.onAuthStateChange(
         event,
         session
     ) => {
+
         if (
             event ===
                 "SIGNED_IN" &&
             session?.user
         ) {
+
             currentUser =
                 session.user;
 
             showApp();
 
             atualizarStatus();
-
             atualizarPerfil();
+
+            /*
+               Não carrega novamente se
+               a aplicação já estiver carregada.
+            */
+
+            if (
+                database.conversations.length === 0
+            ) {
+
+                await carregarConversasSupabase();
+            }
         }
 
         if (
             event ===
             "SIGNED_OUT"
         ) {
+
             currentUser =
                 null;
 
@@ -2344,6 +2829,8 @@ supabaseClient.auth.onAuthStateChange(
 
             selectedImage = null;
             isSending = false;
+
+            limparImagem();
 
             showAuth();
 
@@ -2359,6 +2846,7 @@ supabaseClient.auth.onAuthStateChange(
    ===================================================== */
 
 async function iniciarVeyra() {
+
     carregarLocal();
 
     showAuth();
@@ -2370,6 +2858,7 @@ async function iniciarVeyra() {
         SUPABASE_PUBLISHABLE_KEY ===
             "COLE_SUA_PUBLISHABLE_KEY_AQUI"
     ) {
+
         console.error(
             "Configure a Publishable Key do Supabase."
         );
@@ -2382,6 +2871,7 @@ async function iniciarVeyra() {
     }
 
     try {
+
         const {
             data,
             error
@@ -2395,14 +2885,18 @@ async function iniciarVeyra() {
         if (
             data?.session?.user
         ) {
+
             await iniciarAplicacao(
                 data.session.user
             );
+
         } else {
+
             showAuth();
         }
 
     } catch (erro) {
+
         console.error(
             "Erro ao iniciar Veyra:",
             erro
@@ -2424,4 +2918,3 @@ document.addEventListener(
     "DOMContentLoaded",
     iniciarVeyra
 );
-````
