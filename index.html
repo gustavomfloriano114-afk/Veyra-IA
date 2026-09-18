@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Veyra IA</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- =====================================================
+     TELA DE LOGIN
+     ===================================================== -->
+
+<div id="authScreen" class="auth-screen">
+
+    <div class="auth-card">
+
+        <div class="auth-logo">
+
+            <div class="logo-icon">
+                V
+            </div>
+
+            <div>
+                <strong>Veyra</strong>
+                <span>IA</span>
+            </div>
+
+        </div>
+
+        <h1 id="authTitle">
+            Entrar na Veyra
+        </h1>
+
+        <p id="authSubtitle">
+            Entre na sua conta para continuar.
+        </p>
+
+        <div
+            id="nameGroup"
+            class="auth-field hidden">
+
+            <label for="authName">
+                Nome
+            </label>
+
+            <input
+                id="authName"
+                type="text"
+                placeholder="Seu nome"
+                autocomplete="name">
+
+        </div>
+
+        <div class="auth-field">
+
+            <label for="authEmail">
+                E-mail
+            </label>
+
+            <input
+                id="authEmail"
+                type="email"
+                placeholder="seu@email.com"
+                autocomplete="email">
+
+        </div>
+
+        <div class="auth-field">
+
+            <label for="authPassword">
+                Senha
+            </label>
+
+            <input
+                id="authPassword"
+                type="password"
+                placeholder="Sua senha"
+                autocomplete="current-password">
+
+        </div>
+
+        <button
+            id="authButton"
+            class="auth-button"
+            type="button">
+
+            Entrar
+
+        </button>
+
+        <p
+            id="authError"
+            class="auth-error">
+        </p>
+
+        <button
+            id="authToggle"
+            class="auth-toggle"
+            type="button">
+
+            Ainda não tenho uma conta
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     APLICAÇÃO
+     ===================================================== -->
+
+<div
+    id="app"
+    class="app hidden">
+
+
+    <!-- =================================================
+         SIDEBAR
+         ================================================= -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <div class="logo-icon">
+                V
+            </div>
+
+            <div>
+                <strong>Veyra</strong>
+                <span>IA</span>
+            </div>
+
+        </div>
+
+
+        <button
+            id="newChat"
+            class="new-chat"
+            type="button">
+
+            + Nova conversa
+
+        </button>
+
+
+        <div class="sidebar-title">
+            Conversas
+        </div>
+
+
+        <div
+            id="conversationList"
+            class="conversation-list">
+        </div>
+
+
+        <div class="sidebar-bottom">
+
+            <button
+                id="settingsBtn"
+                class="sidebar-button"
+                type="button">
+
+                ⚙️ Configurações
+
+            </button>
+
+
+            <button
+                id="aboutBtn"
+                class="sidebar-button"
+                type="button">
+
+                ℹ️ Sobre a Veyra
+
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =================================================
+         PRINCIPAL
+         ================================================= -->
+
+    <main class="main">
+
+
+        <!-- HEADER -->
+
+        <header class="header">
+
+            <div class="header-info">
+
+                <div class="veyra-avatar">
+                    V
+                </div>
+
+                <div>
+
+                    <h1>
+                        Veyra IA
+                    </h1>
+
+                    <div class="status">
+
+                        <span
+                            id="statusDot"
+                            class="status-dot">
+                        </span>
+
+                        <span id="statusText">
+                            Veyra pronta
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 PERFIL DO USUÁRIO
+                 ================================================= -->
+
+            <div
+                id="userProfile"
+                class="user-profile">
+
+                <button
+                    id="userProfileButton"
+                    class="user-profile-button"
+                    type="button"
+                    title="Perfil">
+
+                    <div
+                        id="userAvatar"
+                        class="user-avatar">
+
+                        U
+
+                    </div>
+
+                    <div class="user-profile-text">
+
+                        <strong id="userName">
+                            Usuário
+                        </strong>
+
+                        <span id="userEmail">
+                            conta
+                        </span>
+
+                    </div>
+
+                    <span class="profile-arrow">
+                        ▾
+                    </span>
+
+                </button>
+
+
+                <!-- MENU -->
+
+                <div
+                    id="userProfileMenu"
+                    class="user-profile-menu hidden">
+
+                    <div class="profile-menu-header">
+
+                        <div
+                            id="menuUserAvatar"
+                            class="menu-user-avatar">
+
+                            U
+
+                        </div>
+
+                        <div>
+
+                            <strong id="menuUserName">
+                                Usuário
+                            </strong>
+
+                            <span id="menuUserEmail">
+                                conta
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="profile-menu-line">
+                    </div>
+
+
+                    <button
+                        id="profileSettings"
+                        type="button">
+
+                        ⚙️ Configurações
+
+                    </button>
+
+
+                    <button
+                        id="profileLogout"
+                        type="button"
+                        class="profile-logout">
+
+                        🚪 Sair da conta
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             CHAT
+             ================================================= -->
+
+        <section
+            id="chat"
+            class="chat">
+        </section>
+
+
+        <!-- =================================================
+             INPUT
+             ================================================= -->
+
+        <div class="input-area">
+
+
+            <!-- PREVIEW DA IMAGEM -->
+
+            <div
+                id="imagePreview"
+                class="image-preview hidden">
+
+                <img
+                    id="previewImage"
+                    alt="Imagem selecionada">
+
+                <button
+                    id="removeImage"
+                    type="button">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <div class="input-box">
+
+
+                <!-- IMAGEM -->
+
+                <button
+                    id="imageButton"
+                    class="image-button"
+                    type="button"
+                    title="Enviar imagem">
+
+                    🖼️
+
+                </button>
+
+
+                <input
+                    id="imageInput"
+                    type="file"
+                    accept="image/*"
+                    hidden>
+
+
+                <!-- TEXTO -->
+
+                <textarea
+                    id="messageInput"
+                    placeholder="Digite sua mensagem..."
+                    rows="1">
+                </textarea>
+
+
+                <!-- ENVIAR -->
+
+                <button
+                    id="sendButton"
+                    class="send-button"
+                    type="button"
+                    title="Enviar">
+
+                    ➤
+
+                </button>
+
+            </div>
+
+
+            <div class="input-info">
+
+                <span id="modelStatus">
+                    Veyra online
+                </span>
+
+                <span>
+                    Veyra IA • API
+                </span>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- =====================================================
+     SUPABASE
+     ===================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="script.js"></script>
+
+</body>
+</html>
