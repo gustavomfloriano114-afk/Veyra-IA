@@ -1,11 +1,19 @@
-/* =========================================================
-   VEYRA IA
-   ========================================================= */
+/* =====================================================
+   VEYRA IA 0.8
+   SCRIPT COMPLETO
+
+   Supabase Auth
+   Conversas
+   Edge Function
+   OpenRouter
+   Imagens
+   PC + Android + iPhone
+===================================================== */
 
 
-/* =========================================================
+/* =====================================================
    CONFIGURAÇÃO
-========================================================= */
+===================================================== */
 
 const SUPABASE_URL =
     "https://dazwnwkkszydyrcoajll.supabase.co";
@@ -13,80 +21,128 @@ const SUPABASE_URL =
 const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_q87setC5fqkaVhHRWdlabw_UWNav-5H";
 
+
+/* =====================================================
+   EDGE FUNCTION
+===================================================== */
+
 const VEYRA_API_URL =
     "https://dazwnwkkszydyrcoajll.supabase.co/functions/v1/hyper-endpoint";
 
 
-/* =========================================================
-   SUPABASE
-========================================================= */
+/* =====================================================
+   VEYRA
+===================================================== */
 
-const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_PUBLISHABLE_KEY
-    );
+const Veyra = {
 
+    name: "Veyra",
 
-/* =========================================================
-   PERSONALIDADE DA VEYRA
-========================================================= */
+    version: "0.8.0",
 
-const VEYRA_PERSONALITY = `
-Você é a Veyra IA.
+    model: "openrouter/free",
 
-Seu objetivo é ajudar o usuário de forma clara, natural e útil.
+    storageKey: "veyra_data",
 
-Responda sempre em português do Brasil quando o usuário falar português.
+    personality: `
+Você é a Veyra, uma inteligência artificial amigável,
+útil, direta e inteligente.
 
-Seja amigável, direta e inteligente.
+Responda em português do Brasil quando o usuário falar
+em português.
 
 Não invente informações.
 
-Quando não souber algo, diga claramente que não sabe.
-
-Não fique repetindo a pergunta do usuário.
-
-Evite respostas desnecessariamente longas.
+Se não souber alguma coisa, diga claramente que não sabe.
 
 Explique assuntos difíceis de maneira simples.
 
-Quando estiver ajudando com programação, dê instruções práticas e código pronto quando necessário.
+Não seja excessivamente formal.
 
-Considere o contexto da conversa antes de responder.
+Evite respostas enormes quando uma resposta curta resolver.
 
-Você é uma assistente chamada Veyra.
-`;
+Quando o usuário pedir código, entregue código funcional
+e explique somente o necessário.
+
+Quando o usuário pedir ajuda passo a passo,
+explique em etapas simples.
+
+Não fique repetindo a mesma informação.
+
+Seu objetivo é ajudar o usuário de forma prática.
+`
+
+};
 
 
-/* =========================================================
+/* =====================================================
+   SUPABASE
+===================================================== */
+
+let supabaseClient = null;
+
+try {
+
+    if (
+        window.supabase &&
+        typeof window.supabase.createClient === "function"
+    ) {
+
+        supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_PUBLISHABLE_KEY,
+                {
+                    auth: {
+                        persistSession: true,
+                        autoRefreshToken: true,
+                        detectSessionInUrl: true
+                    }
+                }
+            );
+
+    }
+
+} catch (erro) {
+
+    console.error(
+        "Erro ao criar cliente Supabase:",
+        erro
+    );
+
+}
+
+
+/* =====================================================
    ESTADO
-========================================================= */
+===================================================== */
 
 let database = {
-    conversations: []
+
+    conversations: [],
+
+    currentConversation: null
+
 };
 
 let currentUser = null;
 
-let currentConversation = null;
-
 let selectedImage = null;
-
-let authMode = "login";
 
 let isSending = false;
 
+let authMode = "login";
 
-/* =========================================================
-   ELEMENTOS
-========================================================= */
 
-const authScreen =
-    document.getElementById("authScreen");
+/* =====================================================
+   DOM
+===================================================== */
 
 const app =
     document.getElementById("app");
+
+const authScreen =
+    document.getElementById("authScreen");
 
 const loginForm =
     document.getElementById("loginForm");
@@ -100,6 +156,12 @@ const loginEmail =
 const loginPassword =
     document.getElementById("loginPassword");
 
+const loginButton =
+    document.getElementById("loginButton");
+
+const loginMessage =
+    document.getElementById("loginMessage");
+
 const signupName =
     document.getElementById("signupName");
 
@@ -109,11 +171,11 @@ const signupEmail =
 const signupPassword =
     document.getElementById("signupPassword");
 
-const loginButton =
-    document.getElementById("loginButton");
-
 const signupButton =
     document.getElementById("signupButton");
+
+const signupMessage =
+    document.getElementById("signupMessage");
 
 const showSignup =
     document.getElementById("showSignup");
@@ -121,11 +183,19 @@ const showSignup =
 const showLogin =
     document.getElementById("showLogin");
 
-const loginMessage =
-    document.getElementById("loginMessage");
 
-const signupMessage =
-    document.getElementById("signupMessage");
+const sidebar =
+    document.getElementById("sidebar");
+
+const sidebarOverlay =
+    document.getElementById("sidebarOverlay");
+
+const openSidebarButton =
+    document.getElementById("openSidebar");
+
+const closeSidebarButton =
+    document.getElementById("closeSidebar");
+
 
 const chat =
     document.getElementById("chat");
@@ -136,17 +206,23 @@ const messageInput =
 const sendButton =
     document.getElementById("sendButton");
 
-const newChatButton =
+const newChat =
     document.getElementById("newChat");
 
 const conversationList =
     document.getElementById("conversationList");
 
-const settingsButton =
+
+const settingsBtn =
     document.getElementById("settingsBtn");
 
-const aboutButton =
+const aboutBtn =
     document.getElementById("aboutBtn");
+
+
+const statusText =
+    document.getElementById("statusText");
+
 
 const imageButton =
     document.getElementById("imageButton");
@@ -154,14 +230,24 @@ const imageButton =
 const imageInput =
     document.getElementById("imageInput");
 
+const imagePreview =
+    document.getElementById("imagePreview");
+
+const previewImage =
+    document.getElementById("previewImage");
+
+const removeImage =
+    document.getElementById("removeImage");
+
+
 const userProfile =
     document.getElementById("userProfile");
 
+const userProfileButton =
+    document.getElementById("userProfileButton");
+
 const profileMenu =
     document.getElementById("profileMenu");
-
-const logoutButton =
-    document.getElementById("logoutButton");
 
 const userAvatar =
     document.getElementById("userAvatar");
@@ -172,244 +258,55 @@ const userName =
 const userEmail =
     document.getElementById("userEmail");
 
-const statusText =
-    document.getElementById("statusText");
+const profileSettings =
+    document.getElementById("profileSettings");
 
-const header =
-    document.querySelector(".header");
-
-const sidebar =
-    document.querySelector(".sidebar");
+const logoutButton =
+    document.getElementById("logoutButton");
 
 
-/* =========================================================
-   MENU MOBILE
-========================================================= */
+/* =====================================================
+   UTILITÁRIOS
+===================================================== */
 
-let mobileMenuButton = null;
+function mostrarElemento(elemento) {
 
-let mobileOverlay = null;
-
-
-function criarMenuMobile() {
-
-    if (!header || !sidebar) {
+    if (!elemento) {
         return;
     }
 
-
-    /* BOTÃO */
-
-    mobileMenuButton =
-        document.createElement("button");
-
-    mobileMenuButton.id =
-        "mobileMenuButton";
-
-    mobileMenuButton.className =
-        "mobile-menu-button";
-
-    mobileMenuButton.type =
-        "button";
-
-    mobileMenuButton.setAttribute(
-        "aria-label",
-        "Abrir menu"
-    );
-
-    mobileMenuButton.innerHTML = "☰";
-
-
-    header.insertBefore(
-        mobileMenuButton,
-        header.firstChild
-    );
-
-
-    /* OVERLAY */
-
-    mobileOverlay =
-        document.createElement("div");
-
-    mobileOverlay.id =
-        "mobileOverlay";
-
-    mobileOverlay.className =
-        "mobile-overlay";
-
-
-    document.body.appendChild(
-        mobileOverlay
-    );
-
-
-    /* BOTÃO ABRIR/FECHAR */
-
-    mobileMenuButton.addEventListener(
-        "click",
-        function (event) {
-
-            event.stopPropagation();
-
-            alternarMenuMobile();
-
-        }
-    );
-
-
-    /* CLICAR FORA */
-
-    mobileOverlay.addEventListener(
-        "click",
-        function () {
-
-            fecharMenuMobile();
-
-        }
-    );
-
-
-    /* ESC */
-
-    document.addEventListener(
-        "keydown",
-        function (event) {
-
-            if (event.key === "Escape") {
-
-                fecharMenuMobile();
-
-            }
-
-        }
-    );
-
-
-    /* REDIMENSIONAMENTO */
-
-    window.addEventListener(
-        "resize",
-        function () {
-
-            if (window.innerWidth > 700) {
-
-                fecharMenuMobile();
-
-            }
-
-        }
-    );
-
+    elemento.classList.remove("hidden");
 }
 
 
-function abrirMenuMobile() {
+function esconderElemento(elemento) {
 
-    if (!sidebar) {
+    if (!elemento) {
         return;
     }
 
-    sidebar.classList.add(
-        "mobile-open"
-    );
-
-    if (mobileOverlay) {
-
-        mobileOverlay.classList.add(
-            "active"
-        );
-
-    }
-
-    if (mobileMenuButton) {
-
-        mobileMenuButton.innerHTML =
-            "✕";
-
-        mobileMenuButton.setAttribute(
-            "aria-label",
-            "Fechar menu"
-        );
-
-    }
-
+    elemento.classList.add("hidden");
 }
 
 
-function fecharMenuMobile() {
-
-    if (!sidebar) {
-        return;
-    }
-
-    sidebar.classList.remove(
-        "mobile-open"
-    );
-
-    if (mobileOverlay) {
-
-        mobileOverlay.classList.remove(
-            "active"
-        );
-
-    }
-
-    if (mobileMenuButton) {
-
-        mobileMenuButton.innerHTML =
-            "☰";
-
-        mobileMenuButton.setAttribute(
-            "aria-label",
-            "Abrir menu"
-        );
-
-    }
-
-}
-
-
-function alternarMenuMobile() {
-
-    if (!sidebar) {
-        return;
-    }
-
-    if (
-        sidebar.classList.contains(
-            "mobile-open"
-        )
-    ) {
-
-        fecharMenuMobile();
-
-    } else {
-
-        abrirMenuMobile();
-
-    }
-
-}
-
-
-/* =========================================================
+/* =====================================================
    LOCAL STORAGE
-========================================================= */
+===================================================== */
 
 function salvarLocal() {
 
     try {
 
         localStorage.setItem(
-            "veyra_data",
+            Veyra.storageKey,
             JSON.stringify(database)
         );
 
-    } catch (error) {
+    } catch (erro) {
 
-        console.error(
-            "Erro ao salvar local:",
-            error
+        console.warn(
+            "Não foi possível salvar localmente:",
+            erro
         );
 
     }
@@ -423,7 +320,7 @@ function carregarLocal() {
 
         const salvo =
             localStorage.getItem(
-                "veyra_data"
+                Veyra.storageKey
             );
 
         if (!salvo) {
@@ -435,20 +332,18 @@ function carregarLocal() {
 
         if (
             dados &&
-            Array.isArray(
-                dados.conversations
-            )
+            Array.isArray(dados.conversations)
         ) {
 
             database = dados;
 
         }
 
-    } catch (error) {
+    } catch (erro) {
 
-        console.error(
-            "Erro ao carregar local:",
-            error
+        console.warn(
+            "Erro ao carregar dados locais:",
+            erro
         );
 
     }
@@ -456,68 +351,222 @@ function carregarLocal() {
 }
 
 
-/* =========================================================
-   MENSAGENS DE AUTENTICAÇÃO
-========================================================= */
+/* =====================================================
+   AUTH
+===================================================== */
 
-function mostrarLogin() {
+function showAuth() {
 
-    authMode = "login";
+    esconderElemento(app);
 
-    loginForm.style.display =
-        "block";
-
-    signupForm.style.display =
-        "none";
-
-    loginMessage.textContent =
-        "";
-
-    signupMessage.textContent =
-        "";
+    mostrarElemento(authScreen);
 
 }
 
 
-function mostrarCadastro() {
+function showApp() {
 
-    authMode = "signup";
+    esconderElemento(authScreen);
 
-    loginForm.style.display =
-        "none";
-
-    signupForm.style.display =
-        "block";
-
-    loginMessage.textContent =
-        "";
-
-    signupMessage.textContent =
-        "";
+    mostrarElemento(app);
 
 }
 
 
-/* =========================================================
+function limparMensagemAuth() {
+
+    if (loginMessage) {
+        loginMessage.textContent = "";
+    }
+
+    if (signupMessage) {
+        signupMessage.textContent = "";
+    }
+
+}
+
+
+function mostrarErroAuth(mensagem) {
+
+    if (authMode === "login") {
+
+        if (loginMessage) {
+            loginMessage.textContent =
+                mensagem || "";
+        }
+
+    } else {
+
+        if (signupMessage) {
+            signupMessage.textContent =
+                mensagem || "";
+        }
+
+    }
+
+}
+
+
+function setAuthMode(modo) {
+
+    authMode = modo;
+
+    limparMensagemAuth();
+
+    if (modo === "signup") {
+
+        esconderElemento(loginForm);
+
+        mostrarElemento(signupForm);
+
+        setTimeout(() => {
+
+            signupName?.focus();
+
+        }, 100);
+
+    } else {
+
+        esconderElemento(signupForm);
+
+        mostrarElemento(loginForm);
+
+        setTimeout(() => {
+
+            loginEmail?.focus();
+
+        }, 100);
+
+    }
+
+}
+
+
+function traduzirErroAuth(erro) {
+
+    const mensagem =
+        String(
+            erro?.message || ""
+        ).toLowerCase();
+
+
+    if (
+        mensagem.includes(
+            "invalid login credentials"
+        )
+    ) {
+
+        return "E-mail ou senha incorretos.";
+
+    }
+
+
+    if (
+        mensagem.includes(
+            "email not confirmed"
+        )
+    ) {
+
+        return "Confirme seu e-mail antes de entrar.";
+
+    }
+
+
+    if (
+        mensagem.includes(
+            "user already registered"
+        )
+    ) {
+
+        return "Este e-mail já possui uma conta.";
+
+    }
+
+
+    if (
+        mensagem.includes(
+            "password should be at least"
+        )
+    ) {
+
+        return "A senha precisa ter pelo menos 6 caracteres.";
+
+    }
+
+
+    if (
+        mensagem.includes(
+            "invalid email"
+        )
+    ) {
+
+        return "Digite um e-mail válido.";
+
+    }
+
+
+    if (
+        mensagem.includes(
+            "rate limit"
+        )
+    ) {
+
+        return "Muitas tentativas. Aguarde um pouco.";
+
+    }
+
+
+    return (
+        erro?.message ||
+        "Não foi possível realizar a operação."
+    );
+
+}
+
+
+/* =====================================================
    CADASTRO
-========================================================= */
+===================================================== */
 
-async function criarConta() {
+async function signUp() {
+
+    if (!supabaseClient) {
+
+        mostrarErroAuth(
+            "O sistema de contas não foi carregado."
+        );
+
+        return;
+
+    }
+
 
     const nome =
-        signupName.value.trim();
+        signupName?.value.trim() || "";
 
     const email =
-        signupEmail.value.trim();
+        signupEmail?.value.trim() || "";
 
     const senha =
-        signupPassword.value;
+        signupPassword?.value || "";
 
 
-    if (!nome || !email || !senha) {
+    if (!nome) {
 
-        signupMessage.textContent =
-            "Preencha todos os campos.";
+        mostrarErroAuth(
+            "Digite seu nome."
+        );
+
+        return;
+
+    }
+
+
+    if (!email) {
+
+        mostrarErroAuth(
+            "Digite seu e-mail."
+        );
 
         return;
 
@@ -526,19 +575,26 @@ async function criarConta() {
 
     if (senha.length < 6) {
 
-        signupMessage.textContent =
-            "A senha precisa ter pelo menos 6 caracteres.";
+        mostrarErroAuth(
+            "A senha precisa ter pelo menos 6 caracteres."
+        );
 
         return;
 
     }
 
 
-    signupButton.disabled =
-        true;
+    limparMensagemAuth();
 
-    signupButton.textContent =
-        "Criando...";
+
+    if (signupButton) {
+
+        signupButton.disabled = true;
+
+        signupButton.textContent =
+            "Criando conta...";
+
+    }
 
 
     try {
@@ -549,7 +605,7 @@ async function criarConta() {
         } =
             await supabaseClient.auth.signUp({
 
-                email: email,
+                email,
 
                 password: senha,
 
@@ -571,86 +627,115 @@ async function criarConta() {
         }
 
 
-        if (
-            data.user &&
-            !data.session
-        ) {
+        if (!data.session) {
 
-            signupMessage.style.color =
-                "#8fdb9d";
+            if (signupMessage) {
 
-            signupMessage.textContent =
-                "Conta criada! Verifique seu e-mail para confirmar.";
+                signupMessage.textContent =
+                    "Conta criada! Verifique seu e-mail para confirmar a conta e depois entre.";
 
-            signupName.value =
-                "";
+            }
 
-            signupEmail.value =
-                "";
-
-            signupPassword.value =
-                "";
-
-        } else {
-
-            signupMessage.style.color =
-                "#8fdb9d";
-
-            signupMessage.textContent =
-                "Conta criada com sucesso!";
+            return;
 
         }
 
-    } catch (error) {
 
-        signupMessage.style.color =
-            "#ff8f8f";
+        currentUser =
+            data.user;
 
-        signupMessage.textContent =
-            error.message ||
-            "Não foi possível criar a conta.";
+
+        await iniciarAplicacao(
+            data.user
+        );
+
+
+    } catch (erro) {
+
+        console.error(
+            "Erro no cadastro:",
+            erro
+        );
+
+        mostrarErroAuth(
+            traduzirErroAuth(erro)
+        );
 
     } finally {
 
-        signupButton.disabled =
-            false;
+        if (signupButton) {
 
-        signupButton.textContent =
-            "Criar conta";
+            signupButton.disabled =
+                false;
+
+            signupButton.textContent =
+                "Criar conta";
+
+        }
 
     }
 
 }
 
 
-/* =========================================================
+/* =====================================================
    LOGIN
-========================================================= */
+===================================================== */
 
-async function entrar() {
+async function signIn() {
 
-    const email =
-        loginEmail.value.trim();
+    if (!supabaseClient) {
 
-    const senha =
-        loginPassword.value;
-
-
-    if (!email || !senha) {
-
-        loginMessage.textContent =
-            "Digite seu e-mail e senha.";
+        mostrarErroAuth(
+            "O sistema de contas não foi carregado."
+        );
 
         return;
 
     }
 
 
-    loginButton.disabled =
-        true;
+    const email =
+        loginEmail?.value.trim() || "";
 
-    loginButton.textContent =
-        "Entrando...";
+    const senha =
+        loginPassword?.value || "";
+
+
+    if (!email) {
+
+        mostrarErroAuth(
+            "Digite seu e-mail."
+        );
+
+        return;
+
+    }
+
+
+    if (!senha) {
+
+        mostrarErroAuth(
+            "Digite sua senha."
+        );
+
+        return;
+
+    }
+
+
+    limparMensagemAuth();
+
+
+    if (loginButton) {
+
+        loginButton.disabled =
+            true;
+
+        loginButton.textContent =
+            "Entrando...";
+
+    }
 
 
     try {
@@ -661,7 +746,7 @@ async function entrar() {
         } =
             await supabaseClient.auth.signInWithPassword({
 
-                email: email,
+                email,
 
                 password: senha
 
@@ -673,68 +758,258 @@ async function entrar() {
         }
 
 
-        if (data.user) {
+        currentUser =
+            data.user;
 
-            await iniciarAplicacao(
-                data.user
-            );
 
-        }
+        await iniciarAplicacao(
+            data.user
+        );
 
-    } catch (error) {
 
-        loginMessage.textContent =
-            error.message ||
-            "Não foi possível entrar.";
+    } catch (erro) {
+
+        console.error(
+            "Erro no login:",
+            erro
+        );
+
+        mostrarErroAuth(
+            traduzirErroAuth(erro)
+        );
 
     } finally {
 
-        loginButton.disabled =
-            false;
+        if (loginButton) {
 
-        loginButton.textContent =
-            "Entrar";
+            loginButton.disabled =
+                false;
+
+            loginButton.textContent =
+                "Entrar";
+
+        }
 
     }
 
 }
 
 
-/* =========================================================
+/* =====================================================
    LOGOUT
-========================================================= */
+===================================================== */
 
-async function sair() {
+async function signOut() {
 
-    await supabaseClient.auth.signOut();
+    if (!supabaseClient) {
+        return;
+    }
 
-    currentUser =
-        null;
 
-    currentConversation =
-        null;
+    try {
+
+        const {
+            error
+        } =
+            await supabaseClient.auth.signOut();
+
+
+        if (error) {
+            throw error;
+        }
+
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao sair:",
+            erro
+        );
+
+        alert(
+            "Não foi possível sair da conta."
+        );
+
+        return;
+
+    }
+
+
+    currentUser = null;
 
     database = {
-        conversations: []
+
+        conversations: [],
+
+        currentConversation: null
+
     };
 
-    fecharMenuMobile();
+    selectedImage = null;
 
-    app.style.display =
-        "none";
+    isSending = false;
 
-    authScreen.style.display =
-        "flex";
+    fecharSidebar();
 
-    loginPassword.value =
-        "";
+    fecharMenuPerfil();
+
+    limparImagem();
+
+    limparPerfilVisual();
+
+    showAuth();
+
+    setAuthMode("login");
+
+    atualizarStatus();
 
 }
 
 
-/* =========================================================
+/* =====================================================
    PERFIL
-========================================================= */
+===================================================== */
+
+function obterDadosPerfil(user) {
+
+    if (!user) {
+
+        return {
+
+            nome: "Usuário",
+
+            email: "",
+
+            foto: ""
+
+        };
+
+    }
+
+
+    const metadata =
+        user.user_metadata || {};
+
+
+    const nome =
+
+        metadata.name ||
+
+        metadata.full_name ||
+
+        metadata.fullName ||
+
+        metadata.user_name ||
+
+        metadata.preferred_username ||
+
+        user.email?.split("@")[0] ||
+
+        "Usuário";
+
+
+    const email =
+        user.email || "";
+
+
+    const foto =
+
+        metadata.avatar_url ||
+
+        metadata.picture ||
+
+        metadata.avatar ||
+
+        "";
+
+
+    return {
+
+        nome: String(nome),
+
+        email: String(email),
+
+        foto: String(foto)
+
+    };
+
+}
+
+
+function obterInicial(nome) {
+
+    const texto =
+        String(
+            nome || "U"
+        ).trim();
+
+
+    if (!texto) {
+        return "U";
+    }
+
+
+    return texto
+        .charAt(0)
+        .toUpperCase();
+
+}
+
+
+function criarAvatarElemento(
+    elemento,
+    nome,
+    foto
+) {
+
+    if (!elemento) {
+        return;
+    }
+
+
+    elemento.innerHTML = "";
+
+
+    if (foto) {
+
+        const img =
+            document.createElement("img");
+
+
+        img.src =
+            foto;
+
+
+        img.alt =
+            nome;
+
+
+        img.referrerPolicy =
+            "no-referrer";
+
+
+        img.onerror = () => {
+
+            elemento.innerHTML = "";
+
+            elemento.textContent =
+                obterInicial(nome);
+
+        };
+
+
+        elemento.appendChild(img);
+
+        return;
+
+    }
+
+
+    elemento.textContent =
+        obterInicial(nome);
+
+}
+
 
 function atualizarPerfil() {
 
@@ -743,40 +1018,139 @@ function atualizarPerfil() {
     }
 
 
-    const nome =
-        currentUser.user_metadata?.name ||
-        currentUser.user_metadata?.full_name ||
-        currentUser.email?.split("@")[0] ||
-        "Usuário";
+    const perfil =
+        obterDadosPerfil(
+            currentUser
+        );
 
 
-    const email =
-        currentUser.email ||
-        "";
+    if (userName) {
+        userName.textContent =
+            perfil.nome;
+    }
 
 
-    userName.textContent =
-        nome;
+    if (userEmail) {
+        userEmail.textContent =
+            perfil.email;
+    }
 
-    userEmail.textContent =
-        email;
 
-
-    userAvatar.textContent =
-        nome
-            .charAt(0)
-            .toUpperCase();
+    criarAvatarElemento(
+        userAvatar,
+        perfil.nome,
+        perfil.foto
+    );
 
 }
 
 
-/* =========================================================
-   CONVERSAS - SUPABASE
-========================================================= */
+function limparPerfilVisual() {
 
-async function carregarConversas() {
+    if (userName) {
+        userName.textContent =
+            "Usuário";
+    }
 
-    if (!currentUser) {
+    if (userEmail) {
+        userEmail.textContent =
+            "—";
+    }
+
+    if (userAvatar) {
+        userAvatar.innerHTML =
+            "U";
+    }
+
+}
+
+
+function alternarMenuPerfil() {
+
+    if (!profileMenu) {
+        return;
+    }
+
+    profileMenu.classList.toggle(
+        "hidden"
+    );
+
+}
+
+
+function fecharMenuPerfil() {
+
+    if (!profileMenu) {
+        return;
+    }
+
+    profileMenu.classList.add(
+        "hidden"
+    );
+
+}
+
+
+/* =====================================================
+   SIDEBAR MOBILE
+===================================================== */
+
+function abrirSidebar() {
+
+    if (!sidebar) {
+        return;
+    }
+
+
+    sidebar.classList.add(
+        "open"
+    );
+
+
+    if (sidebarOverlay) {
+
+        sidebarOverlay.classList.add(
+            "visible"
+        );
+
+    }
+
+}
+
+
+function fecharSidebar() {
+
+    if (!sidebar) {
+        return;
+    }
+
+
+    sidebar.classList.remove(
+        "open"
+    );
+
+
+    if (sidebarOverlay) {
+
+        sidebarOverlay.classList.remove(
+            "visible"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   CONVERSAS
+===================================================== */
+
+async function carregarConversasSupabase() {
+
+    if (
+        !currentUser ||
+        !supabaseClient
+    ) {
         return;
     }
 
@@ -808,72 +1182,106 @@ async function carregarConversas() {
 
 
         database.conversations =
-            data || [];
+            (data || []).map(
+                conversa => ({
+
+                    id:
+                        conversa.id,
+
+                    title:
+                        conversa.title ||
+                        "Nova conversa",
+
+                    messages:
+                        Array.isArray(
+                            conversa.messages
+                        )
+                            ? conversa.messages
+                            : [],
+
+                    created_at:
+                        conversa.created_at,
+
+                    updated_at:
+                        conversa.updated_at
+
+                })
+            );
+
+
+        if (
+            database.conversations.length === 0
+        ) {
+
+            await criarNovaConversa(
+                false
+            );
+
+        } else {
+
+            database.currentConversation =
+                database
+                    .conversations[0]
+                    .id;
+
+        }
 
 
         salvarLocal();
 
         renderizarConversas();
 
+        carregarConversaAtual();
 
-        if (
-            database.conversations.length >
-            0
-        ) {
 
-            const primeira =
-                database.conversations[0];
-
-            await selecionarConversa(
-                primeira.id
-            );
-
-        } else {
-
-            await criarNovaConversa();
-
-        }
-
-    } catch (error) {
+    } catch (erro) {
 
         console.error(
             "Erro ao carregar conversas:",
-            error
+            erro
         );
-
-        carregarLocal();
 
         renderizarConversas();
 
-        if (
-            database.conversations.length >
-            0
-        ) {
-
-            await selecionarConversa(
-                database.conversations[0].id
-            );
-
-        } else {
-
-            criarNovaConversaLocal();
-
-        }
+        carregarConversaAtual();
 
     }
 
 }
 
 
-/* =========================================================
-   CRIAR CONVERSA
-========================================================= */
+async function salvarConversaSupabase(
+    conversa
+) {
 
-async function criarNovaConversa() {
-
-    if (!currentUser) {
+    if (
+        !currentUser ||
+        !conversa ||
+        !supabaseClient
+    ) {
         return;
     }
+
+
+    const payload = {
+
+        id:
+            conversa.id,
+
+        user_id:
+            currentUser.id,
+
+        title:
+            conversa.title ||
+            "Nova conversa",
+
+        messages:
+            conversa.messages || [],
+
+        updated_at:
+            new Date().toISOString()
+
+    };
 
 
     try {
@@ -884,18 +1292,12 @@ async function criarNovaConversa() {
         } =
             await supabaseClient
                 .from("conversations")
-                .insert({
-
-                    user_id:
-                        currentUser.id,
-
-                    title:
-                        "Nova conversa",
-
-                    messages:
-                        []
-
-                })
+                .upsert(
+                    payload,
+                    {
+                        onConflict: "id"
+                    }
+                )
                 .select()
                 .single();
 
@@ -905,44 +1307,138 @@ async function criarNovaConversa() {
         }
 
 
-        database.conversations.unshift(
-            data
-        );
+        if (data) {
+
+            conversa.updated_at =
+                data.updated_at;
+
+        }
 
 
         salvarLocal();
 
 
-        await selecionarConversa(
-            data.id
-        );
-
-
-        renderizarConversas();
-
-    } catch (error) {
+    } catch (erro) {
 
         console.error(
-            "Erro ao criar conversa:",
-            error
+            "Erro ao salvar conversa:",
+            erro
         );
 
-        criarNovaConversaLocal();
+        salvarLocal();
 
     }
 
 }
 
 
-function criarNovaConversaLocal() {
+async function deletarConversa(
+    conversaId
+) {
+
+    if (!conversaId) {
+        return;
+    }
+
+
+    const conversa =
+        database.conversations.find(
+            item =>
+                item.id ===
+                conversaId
+        );
+
+
+    if (!conversa) {
+        return;
+    }
+
+
+    if (
+        currentUser &&
+        supabaseClient
+    ) {
+
+        try {
+
+            const {
+                error
+            } =
+                await supabaseClient
+                    .from("conversations")
+                    .delete()
+                    .eq(
+                        "id",
+                        conversaId
+                    )
+                    .eq(
+                        "user_id",
+                        currentUser.id
+                    );
+
+
+            if (error) {
+                throw error;
+            }
+
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao excluir conversa:",
+                erro
+            );
+
+            return;
+
+        }
+
+    }
+
+
+    database.conversations =
+        database.conversations.filter(
+            item =>
+                item.id !==
+                conversaId
+        );
+
+
+    if (
+        database.currentConversation ===
+        conversaId
+    ) {
+
+        database.currentConversation =
+
+            database.conversations.length
+                ? database.conversations[0].id
+                : null;
+
+    }
+
+
+    salvarLocal();
+
+    renderizarConversas();
+
+    carregarConversaAtual();
+
+}
+
+
+/* =====================================================
+   NOVA CONVERSA
+===================================================== */
+
+async function criarNovaConversa(
+    salvarOnline = true
+) {
 
     const conversa = {
 
         id:
-            crypto.randomUUID(),
-
-        user_id:
-            currentUser?.id || null,
+            gerarId(),
 
         title:
             "Nova conversa",
@@ -964,54 +1460,92 @@ function criarNovaConversaLocal() {
     );
 
 
-    currentConversation =
-        conversa;
+    database.currentConversation =
+        conversa.id;
 
 
     salvarLocal();
 
     renderizarConversas();
 
-    renderizarChat();
+    carregarConversaAtual();
 
-}
+    fecharSidebar();
 
 
-/* =========================================================
-   SELECIONAR CONVERSA
-========================================================= */
+    if (salvarOnline) {
 
-async function selecionarConversa(
-    id
-) {
-
-    const conversa =
-        database.conversations.find(
-            item => item.id === id
+        await salvarConversaSupabase(
+            conversa
         );
 
-
-    if (!conversa) {
-        return;
     }
 
 
-    currentConversation =
-        conversa;
+    if (messageInput) {
 
+        setTimeout(
+            () => messageInput.focus(),
+            100
+        );
 
-    renderizarConversas();
-
-    renderizarChat();
-
-    fecharMenuMobile();
+    }
 
 }
 
 
-/* =========================================================
-   RENDERIZAR CONVERSAS
-========================================================= */
+function gerarId() {
+
+    if (
+        window.crypto &&
+        typeof window.crypto.randomUUID ===
+            "function"
+    ) {
+
+        return window.crypto.randomUUID();
+
+    }
+
+
+    return (
+        "veyra-" +
+        Date.now() +
+        "-" +
+        Math.random()
+            .toString(36)
+            .slice(2, 10)
+    );
+
+}
+
+
+/* =====================================================
+   CONVERSA ATUAL
+===================================================== */
+
+function obterConversaAtual() {
+
+    if (
+        !database.currentConversation
+    ) {
+        return null;
+    }
+
+
+    return database.conversations.find(
+
+        conversa =>
+            conversa.id ===
+            database.currentConversation
+
+    ) || null;
+
+}
+
+
+/* =====================================================
+   SIDEBAR
+===================================================== */
 
 function renderizarConversas() {
 
@@ -1020,26 +1554,23 @@ function renderizarConversas() {
     }
 
 
-    conversationList.innerHTML =
-        "";
+    conversationList.innerHTML = "";
 
 
     database.conversations.forEach(
         conversa => {
 
             const item =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("button");
+
 
             item.className =
                 "conversation-item";
 
 
             if (
-                currentConversation &&
-                currentConversation.id ===
-                    conversa.id
+                conversa.id ===
+                database.currentConversation
             ) {
 
                 item.classList.add(
@@ -1049,28 +1580,34 @@ function renderizarConversas() {
             }
 
 
-            const texto =
-                document.createElement(
-                    "span"
-                );
+            const titulo =
+                document.createElement("span");
 
-            texto.textContent =
+
+            titulo.textContent =
                 conversa.title ||
                 "Nova conversa";
 
 
             item.appendChild(
-                texto
+                titulo
             );
 
 
             item.addEventListener(
                 "click",
-                function () {
+                () => {
 
-                    selecionarConversa(
-                        conversa.id
-                    );
+                    database.currentConversation =
+                        conversa.id;
+
+                    salvarLocal();
+
+                    renderizarConversas();
+
+                    carregarConversaAtual();
+
+                    fecharSidebar();
 
                 }
             );
@@ -1086,220 +1623,184 @@ function renderizarConversas() {
 }
 
 
-/* =========================================================
-   SALVAR CONVERSA
-========================================================= */
+/* =====================================================
+   CARREGAR CONVERSA
+===================================================== */
 
-async function salvarConversa() {
-
-    if (
-        !currentConversation ||
-        !currentUser
-    ) {
-        return;
-    }
-
-
-    currentConversation.updated_at =
-        new Date().toISOString();
-
-
-    salvarLocal();
-
-
-    try {
-
-        const {
-            error
-        } =
-            await supabaseClient
-                .from("conversations")
-                .update({
-
-                    title:
-                        currentConversation.title,
-
-                    messages:
-                        currentConversation.messages,
-
-                    updated_at:
-                        currentConversation.updated_at
-
-                })
-                .eq(
-                    "id",
-                    currentConversation.id
-                )
-                .eq(
-                    "user_id",
-                    currentUser.id
-                );
-
-
-        if (error) {
-
-            console.error(
-                "Erro ao salvar conversa:",
-                error
-            );
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Erro ao salvar:",
-            error
-        );
-
-    }
-
-
-    renderizarConversas();
-
-}
-
-
-/* =========================================================
-   RENDERIZAR CHAT
-========================================================= */
-
-function renderizarChat() {
+function carregarConversaAtual() {
 
     if (!chat) {
         return;
     }
 
 
-    chat.innerHTML =
-        "";
+    const conversa =
+        obterConversaAtual();
 
 
-    if (
-        !currentConversation ||
-        !Array.isArray(
-            currentConversation.messages
-        ) ||
-        currentConversation.messages.length === 0
-    ) {
+    if (!conversa) {
 
-        mostrarWelcome();
+        showWelcome();
 
         return;
 
     }
 
 
-    currentConversation.messages.forEach(
+    chat.innerHTML = "";
+
+
+    if (
+        !conversa.messages ||
+        conversa.messages.length === 0
+    ) {
+
+        showWelcome();
+
+        return;
+
+    }
+
+
+    conversa.messages.forEach(
         mensagem => {
 
-            adicionarMensagemNaTela(
+            addMessage(
+
                 mensagem.role,
-                mensagem.content
+
+                mensagem.content,
+
+                false,
+
+                mensagem.image || null
+
             );
 
         }
     );
 
 
-    rolarChat();
+    scrollChat();
 
 }
 
 
-/* =========================================================
+/* =====================================================
    WELCOME
-========================================================= */
+===================================================== */
 
-function mostrarWelcome() {
+function showWelcome() {
 
-    const welcome =
-        document.createElement(
-            "div"
-        );
-
-    welcome.className =
-        "welcome";
+    if (!chat) {
+        return;
+    }
 
 
-    welcome.innerHTML = `
-        <h1>Olá, eu sou a Veyra.</h1>
+    chat.innerHTML = `
 
-        <p>
-            Uma IA criada para conversar,
-            ajudar e aprender com o contexto
-            da conversa.
-        </p>
+        <div class="welcome">
 
-        <div class="suggestions">
+            <div class="welcome-icon">
+                V
+            </div>
 
-            <button class="suggestion">
-                Explique algo de forma simples
-            </button>
+            <h2>
+                Olá, eu sou a Veyra.
+            </h2>
 
-            <button class="suggestion">
-                Me ajude com programação
-            </button>
+            <p>
+                Uma IA criada para ajudar você
+                de forma simples, rápida e prática.
+            </p>
 
-            <button class="suggestion">
-                Me dê uma ideia para um projeto
-            </button>
+            <div class="suggestions">
 
-            <button class="suggestion">
-                O que você consegue fazer?
-            </button>
+                <button
+                    class="suggestion"
+                    data-prompt="Explique um assunto difícil de maneira simples."
+                >
+                    Explique algo difícil de maneira simples
+                </button>
+
+                <button
+                    class="suggestion"
+                    data-prompt="Me ajude a criar um projeto."
+                >
+                    Me ajude a criar um projeto
+                </button>
+
+                <button
+                    class="suggestion"
+                    data-prompt="Me ensine alguma coisa interessante."
+                >
+                    Me ensine alguma coisa interessante
+                </button>
+
+                <button
+                    class="suggestion"
+                    data-prompt="Me ajude a resolver um problema."
+                >
+                    Me ajude a resolver um problema
+                </button>
+
+            </div>
 
         </div>
+
     `;
 
 
-    chat.appendChild(
-        welcome
-    );
+    document
+        .querySelectorAll(".suggestion")
+        .forEach(
+            botao => {
 
+                botao.addEventListener(
+                    "click",
+                    () => {
 
-    const botoes =
-        welcome.querySelectorAll(
-            ".suggestion"
+                        if (messageInput) {
+
+                            messageInput.value =
+                                botao.dataset.prompt;
+
+                            ajustarTextarea();
+
+                            messageInput.focus();
+
+                        }
+
+                    }
+                );
+
+            }
         );
-
-
-    botoes.forEach(
-        botao => {
-
-            botao.addEventListener(
-                "click",
-                function () {
-
-                    messageInput.value =
-                        botao.textContent.trim();
-
-                    messageInput.focus();
-
-                }
-            );
-
-        }
-    );
 
 }
 
 
-/* =========================================================
-   ADICIONAR MENSAGEM NA TELA
-========================================================= */
+/* =====================================================
+   MENSAGEM
+===================================================== */
 
-function adicionarMensagemNaTela(
+function addMessage(
     role,
-    content
+    content,
+    scroll = true,
+    image = null
 ) {
 
-    const wrapper =
-        document.createElement(
-            "div"
-        );
+    if (!chat) {
+        return;
+    }
 
-    wrapper.className =
+
+    const message =
+        document.createElement("div");
+
+
+    message.className =
         "message " +
         (
             role === "user"
@@ -1308,179 +1809,263 @@ function adicionarMensagemNaTela(
         );
 
 
-    const messageContent =
-        document.createElement(
-            "div"
-        );
-
-    messageContent.className =
-        "message-content";
+    const bubble =
+        document.createElement("div");
 
 
-    if (
-        typeof content === "string"
-    ) {
+    bubble.className =
+        "message-bubble";
 
-        messageContent.innerHTML =
-            formatarResposta(
-                content
-            );
 
-    } else {
+    if (image) {
 
-        messageContent.textContent =
-            String(content);
+        const img =
+            document.createElement("img");
+
+
+        img.src =
+            image;
+
+
+        img.className =
+            "message-image";
+
+
+        img.alt =
+            "Imagem enviada";
+
+
+        bubble.appendChild(img);
 
     }
 
 
-    wrapper.appendChild(
-        messageContent
+    if (content) {
+
+        const texto =
+            document.createElement("div");
+
+
+        texto.innerHTML =
+            formatarResposta(content);
+
+
+        bubble.appendChild(texto);
+
+    }
+
+
+    message.appendChild(
+        bubble
     );
 
 
     chat.appendChild(
-        wrapper
+        message
     );
 
 
-    return wrapper;
+    if (scroll) {
+        scrollChat();
+    }
 
 }
 
 
-/* =========================================================
-   FORMATAR RESPOSTA
-========================================================= */
+/* =====================================================
+   FORMATAÇÃO
+===================================================== */
 
 function escaparHTML(texto) {
 
-    return String(texto)
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
+    const div =
+        document.createElement("div");
+
+
+    div.textContent =
+        texto;
+
+
+    return div.innerHTML;
 
 }
 
 
 function formatarResposta(texto) {
 
-    let resultado =
-        escaparHTML(texto);
+    if (!texto) {
+        return "";
+    }
 
 
-    resultado =
-        resultado.replace(
+    let seguro =
+        escaparHTML(
+            String(texto)
+        );
+
+
+    const blocosCodigo = [];
+
+
+    seguro =
+        seguro.replace(
             /```([\s\S]*?)```/g,
-            function (_, codigo) {
+            (
+                match,
+                codigo
+            ) => {
+
+                const indice =
+                    blocosCodigo.length;
+
+
+                blocosCodigo.push(
+                    codigo.trim()
+                );
+
 
                 return (
-                    "<pre><code>" +
-                    codigo.trim() +
-                    "</code></pre>"
+                    "___VEYRA_CODE_" +
+                    indice +
+                    "___"
                 );
 
             }
         );
 
 
-    resultado =
-        resultado.replace(
+    seguro =
+        seguro.replace(
             /\*\*(.*?)\*\*/g,
             "<strong>$1</strong>"
         );
 
 
-    resultado =
-        resultado.replace(
+    seguro =
+        seguro.replace(
             /`([^`]+)`/g,
             "<code>$1</code>"
         );
 
 
-    resultado =
-        resultado.replace(
+    seguro =
+        seguro.replace(
             /\n/g,
             "<br>"
         );
 
 
-    return resultado;
+    blocosCodigo.forEach(
+        (
+            codigo,
+            indice
+        ) => {
+
+            const placeholder =
+                "___VEYRA_CODE_" +
+                indice +
+                "___";
+
+
+            const bloco =
+                `<pre><code>${codigo}</code></pre>`;
+
+
+            seguro =
+                seguro.replace(
+                    placeholder,
+                    bloco
+                );
+
+        }
+    );
+
+
+    return seguro;
 
 }
 
 
-/* =========================================================
-   PENSANDO
-========================================================= */
+/* =====================================================
+   THINKING
+===================================================== */
 
-function mostrarPensando() {
+function showThinking() {
 
-    const wrapper =
-        document.createElement(
-            "div"
-        );
-
-    wrapper.className =
-        "message assistant";
+    removeThinking();
 
 
-    const content =
-        document.createElement(
-            "div"
-        );
-
-    content.className =
-        "message-content thinking";
+    if (!chat) {
+        return;
+    }
 
 
-    content.textContent =
-        "Veyra está pensando...";
+    const thinking =
+        document.createElement("div");
 
 
-    wrapper.appendChild(
-        content
-    );
+    thinking.id =
+        "veyra-thinking";
+
+
+    thinking.className =
+        "thinking";
+
+
+    thinking.innerHTML = `
+
+        <span></span>
+        <span></span>
+        <span></span>
+
+    `;
 
 
     chat.appendChild(
-        wrapper
+        thinking
     );
 
 
-    rolarChat();
-
-
-    return wrapper;
+    scrollChat();
 
 }
 
 
-/* =========================================================
-   SCROLL
-========================================================= */
+function hideThinking() {
 
-function rolarChat() {
+    removeThinking();
+
+}
+
+
+function removeThinking() {
+
+    const thinking =
+        document.getElementById(
+            "veyra-thinking"
+        );
+
+
+    if (thinking) {
+        thinking.remove();
+    }
+
+}
+
+
+/* =====================================================
+   SCROLL
+===================================================== */
+
+function scrollChat() {
+
+    if (!chat) {
+        return;
+    }
+
 
     requestAnimationFrame(
-        function () {
+        () => {
 
             chat.scrollTop =
                 chat.scrollHeight;
@@ -1491,54 +2076,195 @@ function rolarChat() {
 }
 
 
-/* =========================================================
-   MENSAGENS PARA IA
-========================================================= */
+/* =====================================================
+   HISTÓRICO PARA IA
+===================================================== */
 
-function criarMensagensIA() {
+function criarMensagensIA(
+    texto,
+    imagemBase64,
+    historico
+) {
 
-    const mensagens = [
+    const mensagens = [];
 
-        {
-            role: "system",
 
-            content:
-                VEYRA_PERSONALITY
+    mensagens.push({
+
+        role:
+            "system",
+
+        content:
+            Veyra.personality
+
+    });
+
+
+    const historicoLimitado =
+
+        Array.isArray(historico)
+
+            ? historico.slice(-8)
+
+            : [];
+
+
+    historicoLimitado.forEach(
+        mensagem => {
+
+            if (
+                !mensagem ||
+                !mensagem.role
+            ) {
+                return;
+            }
+
+
+            if (
+                mensagem.role !== "user" &&
+                mensagem.role !== "assistant"
+            ) {
+                return;
+            }
+
+
+            if (
+                !mensagem.content &&
+                !mensagem.image
+            ) {
+                return;
+            }
+
+
+            if (
+                mensagem.role === "user" &&
+                mensagem.image
+            ) {
+
+                mensagens.push({
+
+                    role:
+                        "user",
+
+                    content: [
+
+                        {
+
+                            type:
+                                "text",
+
+                            text:
+                                mensagem.content ||
+                                "Analise esta imagem."
+
+                        },
+
+                        {
+
+                            type:
+                                "image_url",
+
+                            image_url: {
+
+                                url:
+                                    mensagem.image
+
+                            }
+
+                        }
+
+                    ]
+
+                });
+
+            } else {
+
+                mensagens.push({
+
+                    role:
+                        mensagem.role,
+
+                    content:
+                        mensagem.content || ""
+
+                });
+
+            }
 
         }
+    );
 
-    ];
+
+    /*
+       A mensagem atual já está no histórico
+       quando esta função é chamada.
+
+       Portanto só adicionamos novamente caso
+       ela ainda não esteja no final.
+    */
+
+    const ultimaMensagem =
+        historicoLimitado[
+            historicoLimitado.length - 1
+        ];
 
 
     if (
-        currentConversation &&
-        Array.isArray(
-            currentConversation.messages
-        )
+        !ultimaMensagem ||
+        ultimaMensagem.content !== texto
     ) {
 
-        currentConversation.messages.forEach(
-            mensagem => {
+        if (imagemBase64) {
 
-                if (
-                    mensagem.role === "user" ||
-                    mensagem.role === "assistant"
-                ) {
+            mensagens.push({
 
-                    mensagens.push({
+                role:
+                    "user",
 
-                        role:
-                            mensagem.role,
+                content: [
 
-                        content:
-                            mensagem.content
+                    {
 
-                    });
+                        type:
+                            "text",
 
-                }
+                        text:
+                            texto ||
+                            "Analise esta imagem."
 
-            }
-        );
+                    },
+
+                    {
+
+                        type:
+                            "image_url",
+
+                        image_url: {
+
+                            url:
+                                imagemBase64
+
+                        }
+
+                    }
+
+                ]
+
+            });
+
+        } else {
+
+            mensagens.push({
+
+                role:
+                    "user",
+
+                content:
+                    texto || ""
+
+            });
+
+        }
 
     }
 
@@ -1548,44 +2274,44 @@ function criarMensagensIA() {
 }
 
 
-/* =========================================================
-   PERGUNTAR À IA
-========================================================= */
+/* =====================================================
+   PERGUNTAR IA
+===================================================== */
 
-async function perguntarIA() {
+async function perguntarIA(
+    texto,
+    imagemBase64,
+    historico
+) {
 
     if (!currentUser) {
 
         throw new Error(
-            "Usuário não autenticado."
+            "Você precisa estar conectado."
         );
 
     }
 
 
-    const {
-        data: sessionData,
-        error: sessionError
-    } =
-        await supabaseClient.auth.getSession();
+    if (!supabaseClient) {
 
+        throw new Error(
+            "O sistema da Veyra não foi carregado corretamente."
+        );
 
-    if (sessionError) {
-        throw sessionError;
     }
 
 
-    let session =
-        sessionData.session;
+    let session = null;
 
 
-    if (!session) {
+    try {
 
         const {
             data,
             error
         } =
-            await supabaseClient.auth.refreshSession();
+            await supabaseClient.auth.getSession();
 
 
         if (error) {
@@ -1594,94 +2320,244 @@ async function perguntarIA() {
 
 
         session =
-            data.session;
+            data?.session || null;
+
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao obter sessão:",
+            erro
+        );
 
     }
 
 
-    if (!session) {
+    if (!session?.access_token) {
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient.auth.refreshSession();
+
+
+            if (error) {
+                throw error;
+            }
+
+
+            session =
+                data?.session || null;
+
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao renovar sessão:",
+                erro
+            );
+
+
+            throw new Error(
+                "Sua sessão expirou. Entre novamente na conta."
+            );
+
+        }
+
+    }
+
+
+    if (!session?.access_token) {
 
         throw new Error(
-            "Sessão expirada. Entre novamente."
+            "Sua sessão não está disponível. Entre novamente na conta."
         );
 
     }
 
 
-    const mensagens =
-        criarMensagensIA();
-
-
-    const resposta =
-        await fetch(
-            VEYRA_API_URL,
-            {
-
-                method: "POST",
-
-                mode: "cors",
-
-                cache: "no-store",
-
-                headers: {
-
-                    "Content-Type":
-                        "application/json",
-
-                    "Authorization":
-                        "Bearer " +
-                        session.access_token
-
-                },
-
-                body:
-                    JSON.stringify({
-
-                        messages:
-                            mensagens
-
-                    })
-
-            }
+    const messages =
+        criarMensagensIA(
+            texto,
+            imagemBase64,
+            historico
         );
 
 
-    const dados =
-        await resposta.json();
+    let resposta;
+
+
+    try {
+
+        resposta =
+            await fetch(
+                VEYRA_API_URL,
+                {
+
+                    method:
+                        "POST",
+
+                    mode:
+                        "cors",
+
+                    cache:
+                        "no-store",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json",
+
+                        "Authorization":
+                            "Bearer " +
+                            session.access_token
+
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            messages
+
+                        })
+
+                }
+            );
+
+
+    } catch (erro) {
+
+        console.error(
+            "Erro de conexão:",
+            erro
+        );
+
+
+        throw new Error(
+            "Não foi possível conectar à Veyra. Verifique sua internet e tente novamente."
+        );
+
+    }
+
+
+    let dados = null;
+
+
+    try {
+
+        dados =
+            await resposta.json();
+
+    } catch (erro) {
+
+        console.error(
+            "Resposta inválida:",
+            erro
+        );
+
+
+        throw new Error(
+            "O servidor da Veyra enviou uma resposta inválida."
+        );
+
+    }
 
 
     if (!resposta.ok) {
 
+        console.error(
+            "Erro da Edge Function:",
+            resposta.status,
+            dados
+        );
+
+
+        if (
+            resposta.status === 401
+        ) {
+
+            throw new Error(
+                "Sua sessão não foi aceita pelo servidor. Entre novamente na conta."
+            );
+
+        }
+
+
+        if (
+            resposta.status === 402
+        ) {
+
+            throw new Error(
+                "A OpenRouter informou que não há créditos disponíveis."
+            );
+
+        }
+
+
+        if (
+            resposta.status === 429
+        ) {
+
+            throw new Error(
+                "A Veyra está recebendo muitas solicitações. Aguarde alguns segundos."
+            );
+
+        }
+
+
         throw new Error(
+
             dados?.error ||
+
             dados?.message ||
-            "Erro ao conectar com a IA."
+
+            "Erro ao conversar com a Veyra."
+
         );
 
     }
 
 
-    const respostaIA =
-        dados?.choices?.[0]?.message?.content;
+    const conteudo =
+
+        dados?.choices?.[0]?.message?.content ||
+
+        dados?.content ||
+
+        dados?.resposta ||
+
+        dados?.answer;
 
 
-    if (!respostaIA) {
+    if (
+        typeof conteudo === "string" &&
+        conteudo.trim()
+    ) {
 
-        throw new Error(
-            "A IA não retornou uma resposta."
-        );
+        return conteudo.trim();
 
     }
 
 
-    return respostaIA;
+    console.error(
+        "Resposta sem conteúdo:",
+        dados
+    );
+
+
+    throw new Error(
+        "A Veyra recebeu uma resposta vazia."
+    );
 
 }
 
 
-/* =========================================================
+/* =====================================================
    ENVIAR MENSAGEM
-========================================================= */
+===================================================== */
 
 async function enviarMensagem() {
 
@@ -1691,201 +2567,499 @@ async function enviarMensagem() {
 
 
     const texto =
-        messageInput.value.trim();
-
-
-    if (!texto && !selectedImage) {
-        return;
-    }
-
-
-    if (!currentConversation) {
-
-        await criarNovaConversa();
-
-    }
-
-
-    if (!currentConversation) {
-        return;
-    }
-
-
-    isSending =
-        true;
-
-
-    sendButton.disabled =
-        true;
-
-
-    let textoUsuario =
-        texto;
+        messageInput?.value.trim() || "";
 
 
     if (
-        selectedImage &&
-        !textoUsuario
+        !texto &&
+        !selectedImage
     ) {
+        return;
+    }
 
-        textoUsuario =
-            "Analise esta imagem.";
+
+    if (!currentUser) {
+
+        showAuth();
+
+        mostrarErroAuth(
+            "Faça login para usar a Veyra."
+        );
+
+        return;
 
     }
 
 
-    /* =========================
-       MENSAGEM DO USUÁRIO
-    ========================== */
+    let conversa =
+        obterConversaAtual();
 
-    currentConversation.messages.push({
 
-        role: "user",
+    if (!conversa) {
+
+        await criarNovaConversa();
+
+        conversa =
+            obterConversaAtual();
+
+    }
+
+
+    if (!conversa) {
+        return;
+    }
+
+
+    isSending = true;
+
+
+    if (sendButton) {
+        sendButton.disabled =
+            true;
+    }
+
+
+    const imagem =
+        selectedImage;
+
+
+    const mensagemTexto =
+        texto ||
+        "Analise esta imagem.";
+
+
+    if (
+        conversa.messages.length === 0
+    ) {
+
+        conversa.title =
+            criarTitulo(
+                mensagemTexto
+            );
+
+    }
+
+
+    conversa.messages.push({
+
+        role:
+            "user",
 
         content:
-            textoUsuario
+            mensagemTexto,
+
+        image:
+            imagem || null,
+
+        created_at:
+            new Date().toISOString()
 
     });
 
 
-    /* PRIMEIRA MENSAGEM = TÍTULO */
-
-    if (
-        currentConversation.title ===
-            "Nova conversa"
-    ) {
-
-        currentConversation.title =
-            textoUsuario
-                .substring(0, 40) ||
-            "Nova conversa";
-
-    }
+    addMessage(
+        "user",
+        mensagemTexto,
+        true,
+        imagem
+    );
 
 
-    messageInput.value =
-        "";
+    if (messageInput) {
 
-    ajustarTextarea();
-
-
-    selectedImage =
-        null;
-
-
-    if (imageInput) {
-
-        imageInput.value =
+        messageInput.value =
             "";
 
     }
 
 
-    adicionarMensagemNaTela(
-        "user",
-        textoUsuario
+    ajustarTextarea();
+
+
+    limparImagem();
+
+
+    salvarLocal();
+
+
+    await salvarConversaSupabase(
+        conversa
     );
 
 
-    rolarChat();
-
-
-    await salvarConversa();
-
-
-    /* =========================
-       PENSANDO
-    ========================== */
-
-    const thinking =
-        mostrarPensando();
+    showThinking();
 
 
     try {
 
         const resposta =
-            await perguntarIA();
-
-
-        thinking.remove();
-
-
-        currentConversation.messages.push({
-
-            role: "assistant",
-
-            content:
-                resposta
-
-        });
-
-
-        adicionarMensagemNaTela(
-            "assistant",
-            resposta
-        );
-
-
-        await salvarConversa();
-
-
-        rolarChat();
-
-    } catch (error) {
-
-        console.error(
-            "Erro na IA:",
-            error
-        );
-
-
-        thinking.remove();
-
-
-        const mensagemErro =
-            "Não consegui responder agora. " +
-            (
-                error.message ||
-                "Tente novamente."
+            await perguntarIA(
+                mensagemTexto,
+                imagem,
+                conversa.messages
             );
 
 
-        currentConversation.messages.push({
+        hideThinking();
 
-            role: "assistant",
+
+        conversa.messages.push({
+
+            role:
+                "assistant",
 
             content:
-                mensagemErro
+                resposta,
+
+            created_at:
+                new Date().toISOString()
 
         });
 
 
-        adicionarMensagemNaTela(
+        addMessage(
             "assistant",
-            mensagemErro
+            resposta,
+            true
         );
 
 
-        await salvarConversa();
+        conversa.updated_at =
+            new Date().toISOString();
+
+
+        salvarLocal();
+
+
+        await salvarConversaSupabase(
+            conversa
+        );
+
+
+        renderizarConversas();
+
+
+    } catch (erro) {
+
+        hideThinking();
+
+
+        console.error(
+            "Erro Veyra:",
+            erro
+        );
+
+
+        const mensagemErro =
+            `Não consegui responder agora.
+
+${traduzirErroIA(erro)}`;
+
+
+        addMessage(
+            "assistant",
+            mensagemErro,
+            true
+        );
+
 
     } finally {
 
         isSending =
             false;
 
-        sendButton.disabled =
-            false;
 
-        messageInput.focus();
+        if (sendButton) {
+
+            sendButton.disabled =
+                false;
+
+        }
+
+
+        if (messageInput) {
+
+            setTimeout(
+                () => messageInput.focus(),
+                100
+            );
+
+        }
 
     }
 
 }
 
 
-/* =========================================================
+/* =====================================================
+   TÍTULO
+===================================================== */
+
+function criarTitulo(texto) {
+
+    const limpo =
+        String(texto)
+            .replace(/\s+/g, " ")
+            .trim();
+
+
+    if (!limpo) {
+        return "Nova conversa";
+    }
+
+
+    if (limpo.length <= 34) {
+        return limpo;
+    }
+
+
+    return (
+        limpo.slice(0, 34) +
+        "..."
+    );
+
+}
+
+
+/* =====================================================
+   ERROS IA
+===================================================== */
+
+function traduzirErroIA(erro) {
+
+    const mensagem =
+        String(
+            erro?.message || ""
+        );
+
+
+    return (
+        mensagem ||
+        "Ocorreu um erro desconhecido."
+    );
+
+}
+
+
+/* =====================================================
+   IMAGEM
+===================================================== */
+
+/*
+   Redimensiona a imagem antes de enviar.
+
+   Isso é importante principalmente no celular:
+   fotos de iPhone/Android podem ter vários MB.
+*/
+
+function prepararImagem(file) {
+
+    if (!file) {
+        return;
+    }
+
+
+    if (
+        !file.type ||
+        !file.type.startsWith("image/")
+    ) {
+
+        alert(
+            "Escolha um arquivo de imagem."
+        );
+
+        return;
+
+    }
+
+
+    const reader =
+        new FileReader();
+
+
+    reader.onload =
+        event => {
+
+            const original =
+                event.target.result;
+
+
+            const img =
+                new Image();
+
+
+            img.onload =
+                () => {
+
+                    const maxSize =
+                        1280;
+
+
+                    let largura =
+                        img.width;
+
+
+                    let altura =
+                        img.height;
+
+
+                    if (
+                        largura > maxSize ||
+                        altura > maxSize
+                    ) {
+
+                        const escala =
+                            Math.min(
+                                maxSize / largura,
+                                maxSize / altura
+                            );
+
+
+                        largura =
+                            Math.round(
+                                largura * escala
+                            );
+
+
+                        altura =
+                            Math.round(
+                                altura * escala
+                            );
+
+                    }
+
+
+                    const canvas =
+                        document.createElement(
+                            "canvas"
+                        );
+
+
+                    canvas.width =
+                        largura;
+
+
+                    canvas.height =
+                        altura;
+
+
+                    const contexto =
+                        canvas.getContext(
+                            "2d"
+                        );
+
+
+                    if (!contexto) {
+
+                        selectedImage =
+                            original;
+
+                    } else {
+
+                        contexto.drawImage(
+                            img,
+                            0,
+                            0,
+                            largura,
+                            altura
+                        );
+
+
+                        selectedImage =
+                            canvas.toDataURL(
+                                "image/jpeg",
+                                0.78
+                            );
+
+                    }
+
+
+                    if (previewImage) {
+
+                        previewImage.src =
+                            selectedImage;
+
+                    }
+
+
+                    mostrarElemento(
+                        imagePreview
+                    );
+
+                };
+
+
+            img.onerror =
+                () => {
+
+                    selectedImage =
+                        original;
+
+
+                    if (previewImage) {
+
+                        previewImage.src =
+                            original;
+
+                    }
+
+
+                    mostrarElemento(
+                        imagePreview
+                    );
+
+                };
+
+
+            img.src =
+                original;
+
+        };
+
+
+    reader.onerror =
+        () => {
+
+            alert(
+                "Não foi possível carregar esta imagem."
+            );
+
+        };
+
+
+    reader.readAsDataURL(file);
+
+}
+
+
+function limparImagem() {
+
+    selectedImage =
+        null;
+
+
+    if (imageInput) {
+        imageInput.value =
+            "";
+    }
+
+
+    if (previewImage) {
+        previewImage.src =
+            "";
+    }
+
+
+    esconderElemento(
+        imagePreview
+    );
+
+}
+
+
+/* =====================================================
    TEXTAREA
-========================================================= */
+===================================================== */
 
 function ajustarTextarea() {
 
@@ -1899,62 +3073,96 @@ function ajustarTextarea() {
 
 
     messageInput.style.height =
+
         Math.min(
             messageInput.scrollHeight,
-            140
-        ) +
-        "px";
+            150
+        ) + "px";
 
 }
 
 
-/* =========================================================
-   NOVA CONVERSA
-========================================================= */
-
-async function novaConversa() {
-
-    fecharMenuMobile();
-
-    await criarNovaConversa();
-
-}
-
-
-/* =========================================================
+/* =====================================================
    CONFIGURAÇÕES
-========================================================= */
+===================================================== */
 
 function abrirConfiguracoes() {
 
-    fecharMenuMobile();
+    fecharMenuPerfil();
 
     alert(
-        "As configurações da Veyra serão adicionadas aqui."
+
+        "VEYRA IA\n\n" +
+
+        "Versão: " +
+        Veyra.version +
+
+        "\nModelo: " +
+        Veyra.model +
+
+        "\n\nStatus: " +
+        (
+            currentUser
+                ? "Online"
+                : "Offline"
+        )
+
     );
 
 }
 
 
-/* =========================================================
+/* =====================================================
    SOBRE
-========================================================= */
+===================================================== */
 
 function abrirSobre() {
 
-    fecharMenuMobile();
-
     alert(
+
         "Veyra IA\n\n" +
+
+        "Versão " +
+        Veyra.version +
+
+        "\n\n" +
+
         "Assistente de inteligência artificial."
+
     );
 
 }
 
 
-/* =========================================================
+/* =====================================================
+   STATUS
+===================================================== */
+
+function atualizarStatus() {
+
+    if (!statusText) {
+        return;
+    }
+
+
+    statusText.textContent =
+
+        currentUser
+            ? "Online"
+            : "Offline";
+
+
+    statusText.classList.toggle(
+        "offline",
+        !currentUser
+    );
+
+}
+
+
+/* =====================================================
    INICIAR APLICAÇÃO
-========================================================= */
+===================================================== */
 
 async function iniciarAplicacao(
     user
@@ -1964,274 +3172,317 @@ async function iniciarAplicacao(
         user;
 
 
-    authScreen.style.display =
-        "none";
+    showApp();
 
-    app.style.display =
-        "flex";
+
+    atualizarStatus();
 
 
     atualizarPerfil();
 
 
-    if (statusText) {
+    await carregarConversasSupabase();
 
-        statusText.textContent =
-            "Online";
+
+    if (messageInput) {
+
+        setTimeout(
+            () => messageInput.focus(),
+            150
+        );
 
     }
 
-
-    carregarLocal();
-
-
-    await carregarConversas();
-
-
-    messageInput.focus();
-
 }
 
 
-/* =========================================================
-   EVENTOS DE AUTENTICAÇÃO
-========================================================= */
+/* =====================================================
+   EVENTOS AUTH
+===================================================== */
 
-if (showSignup) {
-
-    showSignup.addEventListener(
-        "click",
-        mostrarCadastro
-    );
-
-}
+showSignup?.addEventListener(
+    "click",
+    () => {
+        setAuthMode("signup");
+    }
+);
 
 
-if (showLogin) {
-
-    showLogin.addEventListener(
-        "click",
-        mostrarLogin
-    );
-
-}
+showLogin?.addEventListener(
+    "click",
+    () => {
+        setAuthMode("login");
+    }
+);
 
 
-if (loginButton) {
-
-    loginButton.addEventListener(
-        "click",
-        entrar
-    );
-
-}
+loginButton?.addEventListener(
+    "click",
+    signIn
+);
 
 
-if (signupButton) {
-
-    signupButton.addEventListener(
-        "click",
-        criarConta
-    );
-
-}
+signupButton?.addEventListener(
+    "click",
+    signUp
+);
 
 
-if (loginPassword) {
+/* =====================================================
+   ENTER LOGIN / CADASTRO
+===================================================== */
 
-    loginPassword.addEventListener(
-        "keydown",
-        function (event) {
+[
+    loginEmail,
+    loginPassword
+].forEach(
+    campo => {
 
-            if (
-                event.key === "Enter"
-            ) {
+        campo?.addEventListener(
+            "keydown",
+            event => {
 
-                entrar();
+                if (
+                    event.key === "Enter"
+                ) {
+
+                    event.preventDefault();
+
+                    signIn();
+
+                }
 
             }
+        );
 
-        }
-    );
-
-}
-
-
-if (signupPassword) {
-
-    signupPassword.addEventListener(
-        "keydown",
-        function (event) {
-
-            if (
-                event.key === "Enter"
-            ) {
-
-                criarConta();
-
-            }
-
-        }
-    );
-
-}
+    }
+);
 
 
-/* =========================================================
-   EVENTOS DO CHAT
-========================================================= */
+[
+    signupName,
+    signupEmail,
+    signupPassword
+].forEach(
+    campo => {
 
-if (sendButton) {
+        campo?.addEventListener(
+            "keydown",
+            event => {
 
-    sendButton.addEventListener(
-        "click",
-        enviarMensagem
-    );
+                if (
+                    event.key === "Enter"
+                ) {
 
-}
+                    event.preventDefault();
 
+                    signUp();
 
-if (messageInput) {
-
-    messageInput.addEventListener(
-        "input",
-        ajustarTextarea
-    );
-
-
-    messageInput.addEventListener(
-        "keydown",
-        function (event) {
-
-            if (
-                event.key === "Enter" &&
-                !event.shiftKey
-            ) {
-
-                event.preventDefault();
-
-                enviarMensagem();
+                }
 
             }
+        );
 
-        }
-    );
-
-}
-
-
-/* =========================================================
-   IMAGEM
-========================================================= */
-
-if (imageButton) {
-
-    imageButton.addEventListener(
-        "click",
-        function () {
-
-            imageInput.click();
-
-        }
-    );
-
-}
+    }
+);
 
 
-if (imageInput) {
-
-    imageInput.addEventListener(
-        "change",
-        function () {
-
-            const arquivo =
-                imageInput.files?.[0];
-
-
-            if (!arquivo) {
-
-                selectedImage =
-                    null;
-
-                return;
-
-            }
-
-
-            selectedImage =
-                arquivo;
-
-        }
-    );
-
-}
-
-
-/* =========================================================
+/* =====================================================
    SIDEBAR
-========================================================= */
+===================================================== */
 
-if (newChatButton) {
-
-    newChatButton.addEventListener(
-        "click",
-        novaConversa
-    );
-
-}
+openSidebarButton?.addEventListener(
+    "click",
+    abrirSidebar
+);
 
 
-if (settingsButton) {
-
-    settingsButton.addEventListener(
-        "click",
-        abrirConfiguracoes
-    );
-
-}
+closeSidebarButton?.addEventListener(
+    "click",
+    fecharSidebar
+);
 
 
-if (aboutButton) {
-
-    aboutButton.addEventListener(
-        "click",
-        abrirSobre
-    );
-
-}
+sidebarOverlay?.addEventListener(
+    "click",
+    fecharSidebar
+);
 
 
-/* =========================================================
+/* =====================================================
+   NOVA CONVERSA
+===================================================== */
+
+newChat?.addEventListener(
+    "click",
+    () => {
+
+        criarNovaConversa();
+
+    }
+);
+
+
+/* =====================================================
+   ENVIAR
+===================================================== */
+
+sendButton?.addEventListener(
+    "click",
+    enviarMensagem
+);
+
+
+messageInput?.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Enter" &&
+            !event.shiftKey
+        ) {
+
+            event.preventDefault();
+
+            enviarMensagem();
+
+        }
+
+    }
+);
+
+
+messageInput?.addEventListener(
+    "input",
+    ajustarTextarea
+);
+
+
+/* =====================================================
+   IMAGEM
+===================================================== */
+
+imageButton?.addEventListener(
+    "click",
+    () => {
+
+        imageInput?.click();
+
+    }
+);
+
+
+imageInput?.addEventListener(
+    "change",
+    event => {
+
+        const file =
+            event.target.files?.[0];
+
+
+        prepararImagem(file);
+
+    }
+);
+
+
+removeImage?.addEventListener(
+    "click",
+    limparImagem
+);
+
+
+/* =====================================================
+   CONFIGURAÇÕES
+===================================================== */
+
+settingsBtn?.addEventListener(
+    "click",
+    () => {
+
+        fecharSidebar();
+
+        abrirConfiguracoes();
+
+    }
+);
+
+
+aboutBtn?.addEventListener(
+    "click",
+    () => {
+
+        fecharSidebar();
+
+        abrirSobre();
+
+    }
+);
+
+
+/* =====================================================
    PERFIL
-========================================================= */
+===================================================== */
 
-if (userProfile) {
+userProfileButton?.addEventListener(
+    "click",
+    event => {
 
-    userProfile.addEventListener(
-        "click",
-        function (event) {
+        event.stopPropagation();
 
-            event.stopPropagation();
+        alternarMenuPerfil();
 
-            userProfile.classList.toggle(
-                "open"
+    }
+);
+
+
+profileSettings?.addEventListener(
+    "click",
+    () => {
+
+        fecharMenuPerfil();
+
+        abrirConfiguracoes();
+
+    }
+);
+
+
+logoutButton?.addEventListener(
+    "click",
+    async () => {
+
+        fecharMenuPerfil();
+
+
+        const confirmar =
+            confirm(
+                "Deseja realmente sair da sua conta?"
             );
 
-        }
-    );
 
-}
+        if (confirmar) {
+
+            await signOut();
+
+        }
+
+    }
+);
 
 
 document.addEventListener(
     "click",
-    function () {
+    event => {
 
-        if (userProfile) {
+        if (
+            userProfile &&
+            !userProfile.contains(
+                event.target
+            )
+        ) {
 
-            userProfile.classList.remove(
-                "open"
-            );
+            fecharMenuPerfil();
 
         }
 
@@ -2239,19 +3490,96 @@ document.addEventListener(
 );
 
 
-/* =========================================================
-   LOGOUT
-========================================================= */
+/* =====================================================
+   SUPABASE AUTH STATE
+===================================================== */
 
-if (logoutButton) {
+if (supabaseClient) {
 
-    logoutButton.addEventListener(
-        "click",
-        function (event) {
+    supabaseClient.auth.onAuthStateChange(
+        async (
+            event,
+            session
+        ) => {
 
-            event.stopPropagation();
+            if (
+                event === "SIGNED_IN" &&
+                session?.user
+            ) {
 
-            sair();
+                currentUser =
+                    session.user;
+
+
+                showApp();
+
+
+                atualizarStatus();
+
+
+                atualizarPerfil();
+
+
+                /*
+                   Se a aplicação ainda não possui
+                   conversas carregadas, busca do Supabase.
+                */
+
+                if (
+                    database.conversations.length === 0
+                ) {
+
+                    await carregarConversasSupabase();
+
+                }
+
+            }
+
+
+            if (
+                event === "SIGNED_OUT"
+            ) {
+
+                currentUser =
+                    null;
+
+
+                database = {
+
+                    conversations: [],
+
+                    currentConversation:
+                        null
+
+                };
+
+
+                selectedImage =
+                    null;
+
+
+                isSending =
+                    false;
+
+
+                fecharSidebar();
+
+
+                fecharMenuPerfil();
+
+
+                limparImagem();
+
+
+                showAuth();
+
+
+                limparPerfilVisual();
+
+
+                atualizarStatus();
+
+            }
 
         }
     );
@@ -2259,101 +3587,111 @@ if (logoutButton) {
 }
 
 
-/* =========================================================
-   AUTENTICAÇÃO SUPABASE
-========================================================= */
+/* =====================================================
+   INICIALIZAÇÃO
+===================================================== */
 
-supabaseClient.auth.onAuthStateChange(
-    async function (
-        event,
-        session
+async function iniciarVeyra() {
+
+    carregarLocal();
+
+
+    showAuth();
+
+
+    setAuthMode(
+        "login"
+    );
+
+
+    if (
+        !SUPABASE_PUBLISHABLE_KEY
     ) {
 
-        if (session?.user) {
+        mostrarErroAuth(
+            "Configure a Publishable Key do Supabase."
+        );
 
-            if (
-                !currentUser ||
-                currentUser.id !==
-                    session.user.id
-            ) {
+        return;
 
-                await iniciarAplicacao(
-                    session.user
-                );
+    }
 
-            }
+
+    if (!supabaseClient) {
+
+        mostrarErroAuth(
+            "Não foi possível carregar o sistema do Supabase."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.auth.getSession();
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        if (
+            data?.session?.user
+        ) {
+
+            await iniciarAplicacao(
+                data.session.user
+            );
 
         } else {
 
-            currentUser =
-                null;
-
-            currentConversation =
-                null;
-
-            app.style.display =
-                "none";
-
-            authScreen.style.display =
-                "flex";
+            showAuth();
 
         }
 
-    }
-);
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao iniciar Veyra:",
+            erro
+        );
 
 
-/* =========================================================
-   INICIALIZAÇÃO
-========================================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    async function () {
-
-        criarMenuMobile();
-
-        carregarLocal();
+        showAuth();
 
 
-        try {
-
-            const {
-                data
-            } =
-                await supabaseClient.auth.getSession();
-
-
-            if (data.session?.user) {
-
-                await iniciarAplicacao(
-                    data.session.user
-                );
-
-            } else {
-
-                authScreen.style.display =
-                    "flex";
-
-                app.style.display =
-                    "none";
-
-            }
-
-        } catch (error) {
-
-            console.error(
-                "Erro ao iniciar Veyra:",
-                error
-            );
-
-            authScreen.style.display =
-                "flex";
-
-            app.style.display =
-                "none";
-
-        }
+        mostrarErroAuth(
+            "Não foi possível conectar ao sistema de contas."
+        );
 
     }
-);
+
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+if (
+    document.readyState === "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        iniciarVeyra
+    );
+
+} else {
+
+    iniciarVeyra();
+
+}
